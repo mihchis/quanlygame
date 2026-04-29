@@ -5,7 +5,7 @@ export function useUserStats() {
   const { library } = useLibrary();
 
   const stats = useMemo(() => {
-    const playedGames = library.filter(i => i.status === "played").length;
+    const playedGames = library.filter(i => i.status === "completed").length;
     const completedAchievements = library.reduce((acc, curr) => acc + (curr.achievements?.filter(a => a.completed).length || 0), 0);
     const completedQuests = library.reduce((acc, curr) => acc + (curr.quests?.filter(q => q.completed).length || 0), 0);
 
