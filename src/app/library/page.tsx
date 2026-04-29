@@ -3,7 +3,7 @@
 import React, { useState, useMemo, useRef, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import { useLibrary } from "@/hooks/useLibrary";
-import { GameStatus } from "@/types/game";
+import { GameStatus, LibraryItem } from "@/types/game";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Filter, 
@@ -57,9 +57,16 @@ export default function LibraryPage() {
     const groups: Record<string, LibraryItem[]> = {};
     
     filteredLibrary.forEach(item => {
-      const words = item.name.split(" ");
-      const seriesKey = words.length > 1 ? words.slice(0, 2).join(" ") : words[0];
+      // Improved heuristic: 
+      // 1. Remove common suffixes and numbers to find the "Series Core"
+      let seriesKey = item.name
+        .split(":")[0] // Take part before colon (e.g., "The Witcher 3: Wild Hunt" -> "The Witcher 3")
+        .replace(/\s+\d+.*$/, "") // Remove numbers and following text (e.g., "Borderlands 2" -> "Borderlands")
+        .replace(/\s+(Edition|Remastered|Definitive|Complete|Collection|Anthology|Original).*$/i, "") // Remove common suffixes
+        .trim();
       
+      if (!seriesKey) seriesKey = item.name;
+
       if (!groups[seriesKey]) groups[seriesKey] = [];
       groups[seriesKey].push(item);
     });
