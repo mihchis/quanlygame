@@ -377,7 +377,7 @@ export default function GameDetailsPage() {
                       <div className="space-y-1">
                         <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Nền tảng của bạn</p>
                         <div className="flex flex-wrap gap-2">
-                          {game.platforms?.length > 0 ? (
+                          {(game.platforms?.length ?? 0) > 0 ? (
                             game.platforms.map(p => (
                               <span key={p} className="text-xs font-bold text-violet-400 bg-violet-500/10 px-2 py-0.5 rounded-lg border border-violet-500/20">{p}</span>
                             ))
