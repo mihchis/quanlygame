@@ -27,8 +27,10 @@ export default function DashboardPage() {
   const stats = useMemo(() => {
     const total = library.length;
     const playing = library.filter(i => i.status === "playing").length;
-    const played = library.filter(i => i.status === "played").length;
+    const completed = library.filter(i => i.status === "completed").length;
     const planToPlay = library.filter(i => i.status === "plan-to-play").length;
+    const upNext = library.filter(i => i.status === "up-next").length;
+    const dropped = library.filter(i => i.status === "dropped").length;
     
     // Achievement stats
     const totalAchievements = library.reduce((acc, curr) => acc + (curr.achievements?.length || 0), 0);
@@ -40,21 +42,25 @@ export default function DashboardPage() {
 
     const statusData = [
       { name: "Đang chơi", value: playing, color: "#3b82f6" },
-      { name: "Đã chơi", value: played, color: "#10b981" },
+      { name: "Đã hoàn thành", value: completed, color: "#10b981" },
       { name: "Dự định", value: planToPlay, color: "#f59e0b" },
+      { name: "Tiếp theo", value: upNext, color: "#8b5cf6" },
+      { name: "Bỏ dở", value: dropped, color: "#ef4444" },
     ].filter(d => d.value > 0);
 
     return {
       total,
       playing,
-      played,
+      completed,
       planToPlay,
+      upNext,
+      dropped,
       totalAchievements,
       completedAchievements,
       totalQuests,
       completedQuests,
       statusData,
-      completionRate: total > 0 ? (played / total) * 100 : 0
+      completionRate: total > 0 ? (completed / total) * 100 : 0
     };
   }, [library]);
 
@@ -85,7 +91,7 @@ export default function DashboardPage() {
               />
               <StatCard 
                 label="Game đã hoàn thành" 
-                value={stats.played} 
+                value={stats.completed} 
                 icon={<CheckCircle2 className="h-6 w-6 text-green-400" />}
                 color="border-green-500/20"
               />
