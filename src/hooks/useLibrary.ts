@@ -48,8 +48,8 @@ export function useLibrary() {
     if (loading || library.length === 0 || !user) return;
 
     const repairLegacyItems = async () => {
-      // Find items missing critical new data (e.g., platforms)
-      const legacyItems = library.filter(item => !item.platforms || item.platforms.length === 0);
+      // Find items missing critical new data (e.g., platforms, genres)
+      const legacyItems = library.filter(item => !item.platforms || !item.genres || item.genres.length === 0);
       
       if (legacyItems.length === 0) return;
 
@@ -63,8 +63,8 @@ export function useLibrary() {
         const data = await getGameDetails(item.gameId);
         
         await updateDoc(doc(db, "library", item.id), {
-          platforms: data.platforms?.map((p: any) => p.platform.name) || [],
-          // Initialize other new fields if needed
+          platforms: item.platforms || data.platforms?.map((p: any) => p.platform.name) || [],
+          genres: data.genres?.map((g: any) => g.name) || [],
           updatedAt: serverTimestamp(),
         });
         console.log(`Auto-updated data for: ${item.name}`);
@@ -98,6 +98,7 @@ export function useLibrary() {
         name: game.name,
         backgroundImage: game.background_image,
         platforms: game.platforms?.map((p: any) => p.platform.name) || [],
+        genres: game.genres?.map((g: any) => g.name) || [],
         status,
         addedAt: serverTimestamp(),
         updatedAt: serverTimestamp(),

@@ -1,33 +1,42 @@
 "use client";
 
 import React, { useState, useMemo, useRef, useEffect } from "react";
+import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import { useLibrary } from "@/hooks/useLibrary";
 import { GameStatus, LibraryItem } from "@/types/game";
 import { motion, AnimatePresence } from "framer-motion";
+import ProtectedRoute from "@/components/ProtectedRoute";
+import LibraryStats from "@/components/LibraryStats";
 import { 
+  BarChart2, 
+  CheckCircle2 as Done, 
+  XCircle, 
+  FastForward,
+  ChevronLeft as Prev,
+  ChevronRight as Next,
+  Trash2 as Remove,
+  LayoutGrid,
   Filter, 
-  Trash2, 
-  CheckCircle2, 
   Circle, 
   Clock, 
-  PlayCircle,
-  ChevronLeft,
-  ChevronRight
+  PlayCircle
 } from "lucide-react";
-import Link from "next/link";
-import ProtectedRoute from "@/components/ProtectedRoute";
 
 const statusColors = {
   playing: "text-blue-400 bg-blue-400/10 border-blue-400/20",
-  played: "text-green-400 bg-green-400/10 border-green-400/20",
+  completed: "text-green-400 bg-green-400/10 border-green-400/20",
   "plan-to-play": "text-yellow-400 bg-yellow-400/10 border-yellow-400/20",
+  "up-next": "text-violet-400 bg-violet-400/10 border-violet-400/20",
+  dropped: "text-red-400 bg-red-400/10 border-red-400/20",
 };
 
 const statusIcons = {
   playing: <PlayCircle className="h-4 w-4" />,
-  played: <CheckCircle2 className="h-4 w-4" />,
+  completed: <Done className="h-4 w-4" />,
   "plan-to-play": <Clock className="h-4 w-4" />,
+  "up-next": <FastForward className="h-4 w-4" />,
+  dropped: <XCircle className="h-4 w-4" />,
 };
 
 export default function LibraryPage() {
@@ -106,55 +115,68 @@ export default function LibraryPage() {
         <Navbar />
         
         <main className="flex-1 py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto space-y-8">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-            <div>
-              <h1 className="text-4xl font-bold text-white">Thư viện của bạn</h1>
-              <p className="text-slate-400 mt-2">Quản lý bộ sưu tập và theo dõi tiến độ chơi game của bạn.</p>
-            </div>
+          <div className="max-w-7xl mx-auto space-y-12">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+              <div>
+                <h1 className="text-4xl font-black text-white italic uppercase tracking-tighter">Thư viện của bạn</h1>
+                <p className="text-slate-400 mt-2 font-medium">Quản lý bộ sưu tập và theo dõi tiến độ chơi game của bạn.</p>
+              </div>
 
-            <div className="flex flex-wrap items-center gap-4">
-              {/* Platform Filter */}
-              <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-900 border border-slate-800 rounded-2xl">
-                <span className="text-[10px] font-black text-slate-500 uppercase ml-2">Thiết bị:</span>
-                <select 
-                  value={platformFilter}
-                  onChange={(e) => setPlatformFilter(e.target.value)}
-                  className="bg-slate-900 text-sm font-bold text-white outline-none cursor-pointer pr-2"
-                >
-                  <option value="all" className="bg-slate-900">Tất cả</option>
-                  {allPlatforms.map(p => (
-                    <option key={p} value={p} className="bg-slate-900">{p}</option>
-                  ))}
-                </select>
+              <div className="flex flex-wrap items-center gap-4">
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-900 border border-slate-800 rounded-2xl">
+                  <span className="text-[10px] font-black text-slate-500 uppercase ml-2">Thiết bị:</span>
+                  <select 
+                    value={platformFilter}
+                    onChange={(e) => setPlatformFilter(e.target.value)}
+                    className="bg-slate-900 text-xs font-bold text-white outline-none cursor-pointer pr-2"
+                  >
+                    <option value="all">TẤT CẢ</option>
+                    {allPlatforms.map(p => (
+                      <option key={p} value={p}>{p}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div className="flex gap-2 p-1 bg-slate-900/50 border border-slate-800 rounded-2xl w-fit">
+            <LibraryStats library={library} />
+
+          <div className="flex flex-wrap gap-2 p-1 bg-slate-900/50 border border-slate-800 rounded-2xl w-fit">
             <button
               onClick={() => setFilter("all")}
-              className={`px-6 py-2 rounded-xl text-sm font-black transition-all ${filter === "all" ? "bg-violet-600 text-white shadow-lg shadow-violet-500/20" : "text-slate-400 hover:text-white"}`}
+              className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${filter === "all" ? "bg-white text-black shadow-lg" : "text-slate-400 hover:text-white"}`}
             >
               Tất Cả
             </button>
             <button
               onClick={() => setFilter("playing")}
-              className={`px-6 py-2 rounded-xl text-sm font-black transition-all ${filter === "playing" ? "bg-blue-600 text-white shadow-lg shadow-blue-500/20" : "text-slate-400 hover:text-white"}`}
+              className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${filter === "playing" ? "bg-blue-600 text-white shadow-lg shadow-blue-500/20" : "text-slate-400 hover:text-white"}`}
             >
               Đang Chơi
             </button>
             <button
-              onClick={() => setFilter("played")}
-              className={`px-6 py-2 rounded-xl text-sm font-black transition-all ${filter === "played" ? "bg-green-600 text-white shadow-lg shadow-green-500/20" : "text-slate-400 hover:text-white"}`}
+              onClick={() => setFilter("up-next")}
+              className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${filter === "up-next" ? "bg-violet-600 text-white shadow-lg shadow-violet-500/20" : "text-slate-400 hover:text-white"}`}
             >
-              Đã Chơi
+              Tiếp Theo
+            </button>
+            <button
+              onClick={() => setFilter("completed")}
+              className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${filter === "completed" ? "bg-green-600 text-white shadow-lg shadow-green-500/20" : "text-slate-400 hover:text-white"}`}
+            >
+              Phá Đảo
             </button>
             <button
               onClick={() => setFilter("plan-to-play")}
-              className={`px-6 py-2 rounded-xl text-sm font-black transition-all ${filter === "plan-to-play" ? "bg-yellow-600 text-white shadow-lg shadow-yellow-500/20" : "text-slate-400 hover:text-white"}`}
+              className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${filter === "plan-to-play" ? "bg-yellow-600 text-white shadow-lg shadow-yellow-500/20" : "text-slate-400 hover:text-white"}`}
             >
               Dự Định
+            </button>
+            <button
+              onClick={() => setFilter("dropped")}
+              className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${filter === "dropped" ? "bg-red-600 text-white shadow-lg shadow-red-500/20" : "text-slate-400 hover:text-white"}`}
+            >
+              Bỏ Dở
             </button>
           </div>
 
@@ -196,7 +218,7 @@ export default function LibraryPage() {
                     disabled={currentPage === 1}
                     className="p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                   >
-                    <ChevronLeft className="h-6 w-6" />
+                    <Prev className="h-6 w-6" />
                   </button>
                   
                   <div className="flex items-center gap-2">
@@ -234,7 +256,7 @@ export default function LibraryPage() {
                     disabled={currentPage === totalPages}
                     className="p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                   >
-                    <ChevronRight className="h-6 w-6" />
+                    <Next className="h-6 w-6" />
                   </button>
                 </div>
               )}
@@ -270,9 +292,9 @@ function LibraryCard({ item, updateGameStatus, updateGameProgress, removeFromLib
           className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-500"
         />
         <div className="absolute top-4 right-4">
-          <div className={`flex items-center gap-2 px-3 py-1 rounded-xl border backdrop-blur-md text-[10px] font-black uppercase tracking-widest ${statusColors[item.status as keyof typeof statusColors]}`}>
+          <div className={`flex items-center gap-2 px-3 py-1 rounded-xl border backdrop-blur-md text-[9px] font-black uppercase tracking-widest ${statusColors[item.status as keyof typeof statusColors]}`}>
             {statusIcons[item.status as keyof typeof statusIcons]}
-            {item.status === "playing" ? "Đang Chơi" : item.status === "played" ? "Đã Chơi" : "Dự Định"}
+            {item.status === "playing" ? "Đang Chơi" : item.status === "completed" ? "Phá Đảo" : item.status === "up-next" ? "Tiếp Theo" : item.status === "plan-to-play" ? "Dự Định" : "Bỏ Dở"}
           </div>
         </div>
       </div>
@@ -285,11 +307,13 @@ function LibraryCard({ item, updateGameStatus, updateGameProgress, removeFromLib
             <select
               value={item.status}
               onChange={(e) => updateGameStatus(item.id, e.target.value as GameStatus)}
-              className="flex-1 bg-slate-800 text-slate-100 text-sm rounded-xl px-3 py-2 border border-slate-700 focus:ring-2 focus:ring-violet-500/50 outline-none transition-all cursor-pointer"
+              className="flex-1 bg-slate-800 text-slate-100 text-xs font-bold rounded-xl px-3 py-2 border border-slate-700 focus:ring-2 focus:ring-violet-500/50 outline-none transition-all cursor-pointer"
             >
               <option value="playing">Đang chơi</option>
-              <option value="played">Đã chơi</option>
+              <option value="up-next">Tiếp theo</option>
+              <option value="completed">Đã phá đảo</option>
               <option value="plan-to-play">Dự định chơi</option>
+              <option value="dropped">Bỏ dở</option>
             </select>
 
             <button
@@ -297,22 +321,22 @@ function LibraryCard({ item, updateGameStatus, updateGameProgress, removeFromLib
               className="p-2 text-slate-500 hover:text-red-400 transition-colors"
               title="Xóa khỏi thư viện"
             >
-              <Trash2 className="h-5 w-5" />
+              <Remove className="h-5 w-5" />
             </button>
           </div>
 
-          {/* Platform Selection */}
+          {/* Selected Platforms Display */}
           {item.platforms && item.platforms.length > 0 && (
-            <select
-              value={item.selectedPlatform || ""}
-              onChange={(e) => updateGameProgress(item.id, { selectedPlatform: e.target.value })}
-              className="w-full bg-slate-800 text-slate-300 text-[10px] font-bold rounded-lg px-2 py-1.5 border border-slate-700 focus:ring-1 focus:ring-violet-500/30 outline-none transition-all cursor-pointer uppercase tracking-wider"
-            >
-              <option value="" className="bg-slate-800">Chọn nền tảng...</option>
-              {item.platforms.map((p: any) => (
-                <option key={p} value={p} className="bg-slate-800">{p}</option>
+            <div className="flex flex-wrap gap-1.5 pt-1">
+              {item.platforms.map((p: string) => (
+                <span 
+                  key={p} 
+                  className="px-2 py-0.5 bg-violet-500/10 border border-violet-500/20 rounded-lg text-[9px] font-black text-violet-400 uppercase tracking-tight"
+                >
+                  {p}
+                </span>
               ))}
-            </select>
+            </div>
           )}
         </div>
 

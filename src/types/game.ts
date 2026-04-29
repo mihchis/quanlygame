@@ -1,4 +1,4 @@
-export type GameStatus = "playing" | "played" | "plan-to-play";
+export type GameStatus = "playing" | "completed" | "plan-to-play" | "up-next" | "dropped";
 
 export interface Game {
   id: number;
@@ -63,5 +63,6 @@ export interface LibraryItem {
   review?: string;
   notes?: string;
   platforms?: string[];
+  genres?: string[];
   selectedPlatform?: string;
 }
