@@ -142,7 +142,7 @@ export default function Navbar() {
                 className="flex flex-col items-center justify-center gap-1.5 text-slate-500 hover:text-violet-500 transition-all px-3 relative group"
               >
                 <div className="p-1 rounded-lg group-hover:bg-violet-500/10 transition-colors">
-                  {React.cloneElement(link.icon as React.ReactElement, { className: "h-5 w-5" })}
+                  {React.cloneElement(link.icon as React.ReactElement<any>, { className: "h-5 w-5" })}
                 </div>
                 <span className="text-[8px] font-black uppercase tracking-tighter">{link.name}</span>
               </Link>
