@@ -278,7 +278,7 @@ function LibraryCard({ item, updateGameStatus, updateGameProgress, removeFromLib
       </div>
 
       <div className="p-5 space-y-4">
-        <h3 className="font-bold text-lg text-slate-100 line-clamp-2 h-14 flex items-center">{item.name}</h3>
+        <h3 className="font-bold text-lg text-slate-100 line-clamp-3 min-h-[4.5rem] flex items-start pt-1">{item.name}</h3>
         
         <div className="space-y-3">
           <div className="flex gap-2">
