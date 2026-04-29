@@ -56,14 +56,30 @@ export default function LibraryPage() {
   const groupedLibrary = useMemo(() => {
     const groups: Record<string, LibraryItem[]> = {};
     
+    // Famous series prefixes to handle cases without colons
+    const famousPrefixes = [
+      "Assassin's Creed", "Call of Duty", "Grand Theft Auto", "God of War", 
+      "Far Cry", "Resident Evil", "Silent Hill", "Metal Gear", "Final Fantasy", 
+      "Dark Souls", "Monster Hunter", "Battlefield", "Halo", "Star Wars",
+      "Spider-Man", "Batman", "The Witcher", "Borderlands", "Doom"
+    ];
+
     filteredLibrary.forEach(item => {
-      // Improved heuristic: 
-      // 1. Remove common suffixes and numbers to find the "Series Core"
-      let seriesKey = item.name
-        .split(":")[0] // Take part before colon (e.g., "The Witcher 3: Wild Hunt" -> "The Witcher 3")
-        .replace(/\s+\d+.*$/, "") // Remove numbers and following text (e.g., "Borderlands 2" -> "Borderlands")
-        .replace(/\s+(Edition|Remastered|Definitive|Complete|Collection|Anthology|Original).*$/i, "") // Remove common suffixes
-        .trim();
+      let name = item.name.split(":")[0].trim();
+      let seriesKey = name;
+
+      // 1. Check against famous prefixes
+      const foundPrefix = famousPrefixes.find(p => name.toLowerCase().startsWith(p.toLowerCase()));
+      if (foundPrefix) {
+        seriesKey = foundPrefix;
+      } else {
+        // 2. Generic cleanup: Remove Roman numerals, numbers, and common suffixes
+        seriesKey = name
+          .replace(/\s+[IVXLCDM]+$/i, "") // Roman numerals (II, III, IV...)
+          .replace(/\s+\d+.*$/, "") // Numbers (2, 3...)
+          .replace(/\s+(Edition|Remastered|Definitive|Complete|Collection|Anthology|Original).*$/i, "")
+          .trim();
+      }
       
       if (!seriesKey) seriesKey = item.name;
 
