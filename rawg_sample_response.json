@@ -1,0 +1,548 @@
+{
+  "id": 28,
+  "slug": "red-dead-redemption-2",
+  "name": "Red Dead Redemption 2",
+  "name_original": "Red Dead Redemption 2",
+  "description": "<p>America, 1899. The end of the wild west era has begun as lawmen hunt down the last remaining outlaw gangs. Those who will not surrender or succumb are killed. </p>\n<p>After a robbery goes badly wrong in the western town of Blackwater, Arthur Morgan and the Van der Linde gang are forced to flee. With federal agents and the best bounty hunters in the nation massing on their heels, the gang must rob, steal and fight their way across the rugged heartland of America in order to survive. As deepening internal divisions threaten to tear the gang apart, Arthur must make a choice between his own ideals and loyalty to the gang who raised him.</p>\n<p>From the creators of Grand Theft Auto V and Red Dead Redemption, Red Dead Redemption 2 is an epic tale of life in America at the dawn of the modern age.</p>",
+  "metacritic": 96,
+  "metacritic_platforms": [
+    {
+      "metascore": 97,
+      "url": "https://www.metacritic.com/game/playstation-4/red-dead-redemption-2",
+      "platform": {
+        "platform": 18,
+        "name": "PlayStation 4",
+        "slug": "playstation4"
+      }
+    },
+    {
+      "metascore": 93,
+      "url": "https://www.metacritic.com/game/pc/red-dead-redemption-2",
+      "platform": {
+        "platform": 4,
+        "name": "PC",
+        "slug": "pc"
+      }
+    },
+    {
+      "metascore": 97,
+      "url": "https://www.metacritic.com/game/xbox-one/red-dead-redemption-2",
+      "platform": {
+        "platform": 1,
+        "name": "Xbox One",
+        "slug": "xbox-one"
+      }
+    }
+  ],
+  "released": "2018-10-26",
+  "tba": false,
+  "updated": "2026-04-27T01:49:47",
+  "background_image": "https://media.rawg.io/media/games/511/5118aff5091cb3efec399c808f8c598f.jpg",
+  "background_image_additional": "https://media.rawg.io/media/screenshots/f3d/f3d6c0eaf1db2bdbb44ad84f15e43f4f.jpg",
+  "website": "https://www.rockstargames.com/reddeadredemption2/",
+  "rating": 4.59,
+  "rating_top": 5,
+  "ratings": [
+    {
+      "id": 5,
+      "title": "exceptional",
+      "count": 4153,
+      "percent": 73.86
+    },
+    {
+      "id": 4,
+      "title": "recommended",
+      "count": 994,
+      "percent": 17.68
+    },
+    {
+      "id": 3,
+      "title": "meh",
+      "count": 300,
+      "percent": 5.34
+    },
+    {
+      "id": 1,
+      "title": "skip",
+      "count": 176,
+      "percent": 3.13
+    }
+  ],
+  "reactions": {
+    "1": 63,
+    "2": 12,
+    "3": 40,
+    "4": 13,
+    "5": 8,
+    "6": 7,
+    "7": 25,
+    "8": 4,
+    "9": 4,
+    "10": 30,
+    "11": 11,
+    "12": 19,
+    "13": 1,
+    "14": 3,
+    "15": 2,
+    "16": 3,
+    "20": 1,
+    "21": 2
+  },
+  "added": 16877,
+  "added_by_status": {
+    "yet": 1021,
+    "owned": 8820,
+    "beaten": 3625,
+    "toplay": 1680,
+    "dropped": 772,
+    "playing": 959
+  },
+  "playtime": 21,
+  "screenshots_count": 47,
+  "movies_count": 0,
+  "creators_count": 8,
+  "achievements_count": 278,
+  "parent_achievements_count": 40,
+  "reddit_url": "https://www.reddit.com/r/Red_Dead_Redemption_2/",
+  "reddit_name": "",
+  "reddit_description": "",
+  "reddit_logo": "",
+  "reddit_count": 1619,
+  "twitch_count": 160,
+  "youtube_count": 1000000,
+  "reviews_text_count": 133,
+  "ratings_count": 5490,
+  "suggestions_count": 630,
+  "alternative_names": [
+    "RDR 2",
+    "RDR2"
+  ],
+  "metacritic_url": "https://www.metacritic.com/game/xbox-one/red-dead-redemption-2",
+  "parents_count": 0,
+  "additions_count": 1,
+  "game_series_count": 3,
+  "user_game": null,
+  "reviews_count": 5623,
+  "saturated_color": "0f0f0f",
+  "dominant_color": "0f0f0f",
+  "parent_platforms": [
+    {
+      "platform": {
+        "id": 1,
+        "name": "PC",
+        "slug": "pc"
+      }
+    },
+    {
+      "platform": {
+        "id": 2,
+        "name": "PlayStation",
+        "slug": "playstation"
+      }
+    },
+    {
+      "platform": {
+        "id": 3,
+        "name": "Xbox",
+        "slug": "xbox"
+      }
+    }
+  ],
+  "platforms": [
+    {
+      "platform": {
+        "id": 4,
+        "name": "PC",
+        "slug": "pc",
+        "image": null,
+        "year_end": null,
+        "year_start": null,
+        "games_count": 560749,
+        "image_background": "https://media.rawg.io/media/games/d82/d82990b9c67ba0d2d09d4e6fa88885a7.jpg"
+      },
+      "released_at": "2018-10-26",
+      "requirements": {
+        "minimum": "Minimum:\nRequires a 64-bit processor and operating system\nOS: Windows 7 - Service Pack 1 (6.1.7601)\nProcessor: Intel® Core™ i5-2500K / AMD FX-6300\nMemory: 8 GB RAM\nGraphics: Nvidia GeForce GTX 770 2GB / AMD Radeon R9 280 3GB\nNetwork: Broadband Internet connection\nStorage: 150 GB available space\nSound Card: Direct X Compatible",
+        "recommended": "Recommended:\nRequires a 64-bit processor and operating system\nOS: Windows 10 - April 2018 Update (v1803)\nProcessor: Intel® Core™ i7-4770K / AMD Ryzen 5 1500X\nMemory: 12 GB RAM\nGraphics: Nvidia GeForce GTX 1060 6GB / AMD Radeon RX 480 4GB\nNetwork: Broadband Internet connection\nStorage: 150 GB available space\nSound Card: Direct X Compatible"
+      }
+    },
+    {
+      "platform": {
+        "id": 18,
+        "name": "PlayStation 4",
+        "slug": "playstation4",
+        "image": null,
+        "year_end": null,
+        "year_start": null,
+        "games_count": 6996,
+        "image_background": "https://media.rawg.io/media/games/da1/da1b267764d77221f07a4386b6548e5a.jpg"
+      },
+      "released_at": "2018-10-26",
+      "requirements": {}
+    },
+    {
+      "platform": {
+        "id": 1,
+        "name": "Xbox One",
+        "slug": "xbox-one",
+        "image": null,
+        "year_end": null,
+        "year_start": null,
+        "games_count": 5740,
+        "image_background": "https://media.rawg.io/media/games/d82/d82990b9c67ba0d2d09d4e6fa88885a7.jpg"
+      },
+      "released_at": "2018-10-26",
+      "requirements": {}
+    }
+  ],
+  "stores": [
+    {
+      "id": 257732,
+      "url": "",
+      "store": {
+        "id": 3,
+        "name": "PlayStation Store",
+        "slug": "playstation-store",
+        "domain": "store.playstation.com",
+        "games_count": 8077,
+        "image_background": "https://media.rawg.io/media/games/618/618c2031a07bbff6b4f611f10b6bcdbc.jpg"
+      }
+    },
+    {
+      "id": 374316,
+      "url": "",
+      "store": {
+        "id": 11,
+        "name": "Epic Games",
+        "slug": "epic-games",
+        "domain": "epicgames.com",
+        "games_count": 1451,
+        "image_background": "https://media.rawg.io/media/games/1bd/1bd2657b81eb0c99338120ad444b24ff.jpg"
+      }
+    },
+    {
+      "id": 384218,
+      "url": "",
+      "store": {
+        "id": 1,
+        "name": "Steam",
+        "slug": "steam",
+        "domain": "store.steampowered.com",
+        "games_count": 123346,
+        "image_background": "https://media.rawg.io/media/games/fc1/fc1307a2774506b5bd65d7e8424664a7.jpg"
+      }
+    },
+    {
+      "id": 48782,
+      "url": "",
+      "store": {
+        "id": 2,
+        "name": "Xbox Store",
+        "slug": "xbox-store",
+        "domain": "microsoft.com",
+        "games_count": 4938,
+        "image_background": "https://media.rawg.io/media/games/34b/34b1f1850a1c06fd971bc6ab3ac0ce0e.jpg"
+      }
+    }
+  ],
+  "developers": [
+    {
+      "id": 10,
+      "name": "Rockstar Games",
+      "slug": "rockstar-games",
+      "games_count": 26,
+      "image_background": "https://media.rawg.io/media/screenshots/a95/a95c031fe96063cc40ad377fd828d9ad.jpg"
+    }
+  ],
+  "genres": [
+    {
+      "id": 4,
+      "name": "Action",
+      "slug": "action",
+      "games_count": 191609,
+      "image_background": "https://media.rawg.io/media/games/73e/73eecb8909e0c39fb246f457b5d6cbbe.jpg"
+    }
+  ],
+  "tags": [
+    {
+      "id": 31,
+      "name": "Singleplayer",
+      "slug": "singleplayer",
+      "language": "eng",
+      "games_count": 250833,
+      "image_background": "https://media.rawg.io/media/games/587/587588c64afbff80e6f444eb2e46f9da.jpg"
+    },
+    {
+      "id": 7,
+      "name": "Multiplayer",
+      "slug": "multiplayer",
+      "language": "eng",
+      "games_count": 42555,
+      "image_background": "https://media.rawg.io/media/games/ec3/ec3a7db7b8ab5a71aad622fe7c62632f.jpg"
+    },
+    {
+      "id": 13,
+      "name": "Atmospheric",
+      "slug": "atmospheric",
+      "language": "eng",
+      "games_count": 39708,
+      "image_background": "https://media.rawg.io/media/games/562/562553814dd54e001a541e4ee83a591c.jpg"
+    },
+    {
+      "id": 42,
+      "name": "Great Soundtrack",
+      "slug": "great-soundtrack",
+      "language": "eng",
+      "games_count": 3450,
+      "image_background": "https://media.rawg.io/media/games/198/1988a337305e008b41d7f536ce9b73f6.jpg"
+    },
+    {
+      "id": 18,
+      "name": "Co-op",
+      "slug": "co-op",
+      "language": "eng",
+      "games_count": 14392,
+      "image_background": "https://media.rawg.io/media/games/8cc/8cce7c0e99dcc43d66c8efd42f9d03e3.jpg"
+    },
+    {
+      "id": 118,
+      "name": "Story Rich",
+      "slug": "story-rich",
+      "language": "eng",
+      "games_count": 27260,
+      "image_background": "https://media.rawg.io/media/games/bc0/bc06a29ceac58652b684deefe7d56099.jpg"
+    },
+    {
+      "id": 36,
+      "name": "Open World",
+      "slug": "open-world",
+      "language": "eng",
+      "games_count": 9266,
+      "image_background": "https://media.rawg.io/media/games/618/618c2031a07bbff6b4f611f10b6bcdbc.jpg"
+    },
+    {
+      "id": 8,
+      "name": "First-Person",
+      "slug": "first-person",
+      "language": "eng",
+      "games_count": 37397,
+      "image_background": "https://media.rawg.io/media/games/26d/26d4437715bee60138dab4a7c8c59c92.jpg"
+    },
+    {
+      "id": 149,
+      "name": "Third Person",
+      "slug": "third-person",
+      "language": "eng",
+      "games_count": 14710,
+      "image_background": "https://media.rawg.io/media/games/b49/b4912b5dbfc7ed8927b65f05b8507f6c.jpg"
+    },
+    {
+      "id": 40845,
+      "name": "Partial Controller Support",
+      "slug": "partial-controller-support",
+      "language": "eng",
+      "games_count": 13990,
+      "image_background": "https://media.rawg.io/media/games/62c/62c7c8b28a27b83680b22fb9d33fc619.jpg"
+    },
+    {
+      "id": 30,
+      "name": "FPS",
+      "slug": "fps",
+      "language": "eng",
+      "games_count": 14989,
+      "image_background": "https://media.rawg.io/media/games/1bd/1bd2657b81eb0c99338120ad444b24ff.jpg"
+    },
+    {
+      "id": 9,
+      "name": "Online Co-Op",
+      "slug": "online-co-op",
+      "language": "eng",
+      "games_count": 7682,
+      "image_background": "https://media.rawg.io/media/games/aa3/aa36ba4b486a03ddfaef274fb4f5afd4.jpg"
+    },
+    {
+      "id": 26,
+      "name": "Gore",
+      "slug": "gore",
+      "language": "eng",
+      "games_count": 6669,
+      "image_background": "https://media.rawg.io/media/games/152/152e788b7504aa2753c86dae912fb34c.jpg"
+    },
+    {
+      "id": 6,
+      "name": "Exploration",
+      "slug": "exploration",
+      "language": "eng",
+      "games_count": 29245,
+      "image_background": "https://media.rawg.io/media/games/21c/21cc15d233117c6809ec86870559e105.jpg"
+    },
+    {
+      "id": 37,
+      "name": "Sandbox",
+      "slug": "sandbox",
+      "language": "eng",
+      "games_count": 8514,
+      "image_background": "https://media.rawg.io/media/games/b4e/b4e4c73d5aa4ec66bbf75375c4847a2b.jpg"
+    },
+    {
+      "id": 34,
+      "name": "Violent",
+      "slug": "violent",
+      "language": "eng",
+      "games_count": 7852,
+      "image_background": "https://media.rawg.io/media/games/5a4/5a44112251d70a25291cc33757220fce.jpg"
+    },
+    {
+      "id": 150,
+      "name": "Third-Person Shooter",
+      "slug": "third-person-shooter",
+      "language": "eng",
+      "games_count": 4168,
+      "image_background": "https://media.rawg.io/media/games/f87/f87457e8347484033cb34cde6101d08d.jpg"
+    },
+    {
+      "id": 157,
+      "name": "PvP",
+      "slug": "pvp",
+      "language": "eng",
+      "games_count": 12048,
+      "image_background": "https://media.rawg.io/media/games/511/5118aff5091cb3efec399c808f8c598f.jpg"
+    },
+    {
+      "id": 40837,
+      "name": "In-App Purchases",
+      "slug": "in-app-purchases",
+      "language": "eng",
+      "games_count": 3419,
+      "image_background": "https://media.rawg.io/media/games/447/4470c1e76f01acfaf5af9c207d1c1c92.jpg"
+    },
+    {
+      "id": 77,
+      "name": "Realistic",
+      "slug": "realistic",
+      "language": "eng",
+      "games_count": 9156,
+      "image_background": "https://media.rawg.io/media/screenshots/f34/f34c86335d0c51baa582aa93fa2d3f55.jpg"
+    },
+    {
+      "id": 192,
+      "name": "Mature",
+      "slug": "mature",
+      "language": "eng",
+      "games_count": 4783,
+      "image_background": "https://media.rawg.io/media/games/4fb/4fb548e4816c84d1d70f1a228fb167cc.jpg"
+    },
+    {
+      "id": 110,
+      "name": "Cinematic",
+      "slug": "cinematic",
+      "language": "eng",
+      "games_count": 3381,
+      "image_background": "https://media.rawg.io/media/games/471/4712c9ac591f556f553556b864a7e92b.jpg"
+    },
+    {
+      "id": 89,
+      "name": "Historical",
+      "slug": "historical",
+      "language": "eng",
+      "games_count": 3988,
+      "image_background": "https://media.rawg.io/media/games/55e/55ee6432ac2bf224610fa17e4c652107.jpg"
+    },
+    {
+      "id": 144,
+      "name": "Crime",
+      "slug": "crime",
+      "language": "eng",
+      "games_count": 3270,
+      "image_background": "https://media.rawg.io/media/games/d69/d69810315bd7e226ea2d21f9156af629.jpg"
+    },
+    {
+      "id": 45878,
+      "name": "Online PvP",
+      "slug": "online-pvp",
+      "language": "eng",
+      "games_count": 6411,
+      "image_background": "https://media.rawg.io/media/games/742/7424c1f7d0a8da9ae29cd866f985698b.jpg"
+    },
+    {
+      "id": 478,
+      "name": "3rd-Person Perspective",
+      "slug": "3rd-person-perspective",
+      "language": "eng",
+      "games_count": 87,
+      "image_background": "https://media.rawg.io/media/games/b7d/b7d3f1715fa8381a4e780173a197a615.jpg"
+    },
+    {
+      "id": 270,
+      "name": "Blood",
+      "slug": "blood",
+      "language": "eng",
+      "games_count": 2157,
+      "image_background": "https://media.rawg.io/media/games/3ea/3ea3c9bbd940b6cb7f2139e42d3d443f.jpg"
+    },
+    {
+      "id": 78,
+      "name": "America",
+      "slug": "america",
+      "language": "eng",
+      "games_count": 974,
+      "image_background": "https://media.rawg.io/media/games/a79/a79d2fc90c4dbf07a8580b19600fd61d.jpg"
+    },
+    {
+      "id": 578,
+      "name": "Masterpiece",
+      "slug": "masterpiece",
+      "language": "eng",
+      "games_count": 302,
+      "image_background": "https://media.rawg.io/media/games/9f1/9f1891779cb20f44de93cef33b067e50.jpg"
+    },
+    {
+      "id": 577,
+      "name": "Beautiful",
+      "slug": "beautiful",
+      "language": "eng",
+      "games_count": 1875,
+      "image_background": "https://media.rawg.io/media/games/c24/c24f4434882ae9c2c8d9d38de82cb7a5.jpg"
+    },
+    {
+      "id": 181,
+      "name": "Hunting",
+      "slug": "hunting",
+      "language": "eng",
+      "games_count": 1091,
+      "image_background": "https://media.rawg.io/media/games/119/119bb59e64c7956171a33df0d35aee6b.jpg"
+    },
+    {
+      "id": 152,
+      "name": "Western",
+      "slug": "western",
+      "language": "eng",
+      "games_count": 1430,
+      "image_background": "https://media.rawg.io/media/screenshots/ec9/ec901b13386ef03af757e0f165e04b3c.jpg"
+    },
+    {
+      "id": 5452,
+      "name": "3rd-person",
+      "slug": "3rd-person",
+      "language": "eng",
+      "games_count": 93,
+      "image_background": "https://media.rawg.io/media/screenshots/fa7/fa74edcad003d71d5406a0b8976a5b88.jpg"
+    }
+  ],
+  "publishers": [
+    {
+      "id": 2155,
+      "name": "Rockstar Games",
+      "slug": "rockstar-games",
+      "games_count": 83,
+      "image_background": "https://media.rawg.io/media/games/bcd/bcdadb5dd2be66dd4dd1f657275b3f8e.jpg"
+    }
+  ],
+  "esrb_rating": {
+    "id": 4,
+    "name": "Mature",
+    "slug": "mature"
+  },
+  "clip": null,
+  "description_raw": "America, 1899. The end of the wild west era has begun as lawmen hunt down the last remaining outlaw gangs. Those who will not surrender or succumb are killed. \r\n\r\nAfter a robbery goes badly wrong in the western town of Blackwater, Arthur Morgan and the Van der Linde gang are forced to flee. With federal agents and the best bounty hunters in the nation massing on their heels, the gang must rob, steal and fight their way across the rugged heartland of America in order to survive. As deepening internal divisions threaten to tear the gang apart, Arthur must make a choice between his own ideals and loyalty to the gang who raised him.\r\n\r\nFrom the creators of Grand Theft Auto V and Red Dead Redemption, Red Dead Redemption 2 is an epic tale of life in America at the dawn of the modern age."
+}
