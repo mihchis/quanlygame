@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import { searchGames, getGameDetails } from "@/services/rawg";
-import { Scale, Search, VS, Star, Users, Monitor, Zap, X, Plus, Info } from "lucide-react";
+import { Scale, Search, Star, Users, Monitor, Zap, X, Plus, Info } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 
