@@ -34,7 +34,6 @@ export default function LibraryPage() {
   const { library, loading, updateGameStatus, removeFromLibrary, updateGameProgress } = useLibrary();
   const [filter, setFilter] = useState<GameStatus | "all">("all");
   const [platformFilter, setPlatformFilter] = useState<string>("all");
-  const [groupBySeries, setGroupBySeries] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 16;
 
@@ -51,23 +50,12 @@ export default function LibraryPage() {
   // Reset pagination when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [filter, platformFilter, groupBySeries]);
+  }, [filter, platformFilter]);
 
-  const totalPages = Math.ceil(filteredLibrary.length / itemsPerPage);
-  const paginatedLibrary = useMemo(() => {
-    const start = (currentPage - 1) * itemsPerPage;
-    return filteredLibrary.slice(start, start + itemsPerPage);
-  }, [filteredLibrary, currentPage]);
-
-  // Grouping Logic (based on paginated or filtered? User probably wants to group ALL filtered items)
+  // Grouping Logic - MANDATORY
   const groupedLibrary = useMemo(() => {
-    if (!groupBySeries) return null;
-
     const groups: Record<string, LibraryItem[]> = {};
     
-    // Group all filtered items, then maybe paginate the groups?
-    // User said "theo loạt game", usually you group everything then paginate.
-    // But for simplicity, let's group all filtered items.
     filteredLibrary.forEach(item => {
       const words = item.name.split(" ");
       const seriesKey = words.length > 1 ? words.slice(0, 2).join(" ") : words[0];
@@ -76,8 +64,18 @@ export default function LibraryPage() {
       groups[seriesKey].push(item);
     });
 
-    return Object.entries(groups).sort((a, b) => b[1].length - a[1].length);
-  }, [filteredLibrary, groupBySeries]);
+    // Sort groups by number of games, then alphabetically
+    return Object.entries(groups).sort((a, b) => {
+      if (b[1].length !== a[1].length) return b[1].length - a[1].length;
+      return a[0].localeCompare(b[0]);
+    });
+  }, [filteredLibrary]);
+
+  const totalPages = Math.ceil(groupedLibrary.length / itemsPerPage);
+  const paginatedGroups = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return groupedLibrary.slice(start, start + itemsPerPage);
+  }, [groupedLibrary, currentPage]);
 
   return (
     <ProtectedRoute>
@@ -93,19 +91,6 @@ export default function LibraryPage() {
             </div>
 
             <div className="flex flex-wrap items-center gap-4">
-              {/* Grouping Toggle */}
-              <button
-                onClick={() => setGroupBySeries(!groupBySeries)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-2xl border font-bold text-xs transition-all ${
-                  groupBySeries 
-                    ? "bg-violet-600 border-violet-500 text-white shadow-lg shadow-violet-500/20" 
-                    : "bg-slate-900 border-slate-800 text-slate-400 hover:text-white"
-                }`}
-              >
-                <Filter className="h-4 w-4" />
-                Gom nhóm theo loạt game
-              </button>
-
               {/* Platform Filter */}
               <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-900 border border-slate-800 rounded-2xl">
                 <span className="text-[10px] font-black text-slate-500 uppercase ml-2">Thiết bị:</span>
@@ -154,44 +139,30 @@ export default function LibraryPage() {
             <div className="flex justify-center py-20">
               <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-violet-500"></div>
             </div>
-          ) : groupBySeries && groupedLibrary && groupedLibrary.length > 0 ? (
+          ) : paginatedGroups.length > 0 ? (
             <div className="space-y-12">
-              {groupedLibrary.map(([series, games]) => (
-                <div key={series} className="space-y-6">
-                  <div className="flex items-center gap-4">
-                    <h2 className="text-2xl font-black text-white tracking-tight">{series}</h2>
-                    <div className="h-px flex-1 bg-slate-800" />
-                    <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">{games.length} Games</span>
+              <div className="space-y-12">
+                {paginatedGroups.map(([series, games]) => (
+                  <div key={series} className="space-y-6">
+                    <div className="flex items-center gap-4">
+                      <h2 className="text-2xl font-black text-white tracking-tight">{series}</h2>
+                      <div className="h-px flex-1 bg-slate-800" />
+                      <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">{games.length} Games</span>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                      {games.map((item: any) => (
+                        <LibraryCard 
+                          key={item.id} 
+                          item={item} 
+                          updateGameStatus={updateGameStatus}
+                          updateGameProgress={updateGameProgress}
+                          removeFromLibrary={removeFromLibrary}
+                        />
+                      ))}
+                    </div>
                   </div>
-                  
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    {games.map((item: any) => (
-                      <LibraryCard 
-                        key={item.id} 
-                        item={item} 
-                        updateGameStatus={updateGameStatus}
-                        updateGameProgress={updateGameProgress}
-                        removeFromLibrary={removeFromLibrary}
-                      />
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : filteredLibrary.length > 0 ? (
-            <div className="space-y-12">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                <AnimatePresence>
-                  {paginatedLibrary.map((item) => (
-                    <LibraryCard 
-                      key={item.id} 
-                      item={item} 
-                      updateGameStatus={updateGameStatus}
-                      updateGameProgress={updateGameProgress}
-                      removeFromLibrary={removeFromLibrary}
-                    />
-                  ))}
-                </AnimatePresence>
+                ))}
               </div>
 
               {/* Pagination Controls */}
@@ -207,7 +178,6 @@ export default function LibraryPage() {
                   
                   <div className="flex items-center gap-2">
                     {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => {
-                      // Show only nearby pages if there are many
                       if (
                         page === 1 || 
                         page === totalPages || 

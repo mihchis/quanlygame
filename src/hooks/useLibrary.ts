@@ -16,6 +16,7 @@ import { db, isConfigValid } from "@/lib/firebase";
 import { useAuth } from "@/context/AuthContext";
 import { LibraryItem, GameStatus } from "@/types/game";
 import toast from "react-hot-toast";
+import { getGameDetails } from "@/services/rawg";
 
 export function useLibrary() {
   const { user } = useAuth();
@@ -59,10 +60,7 @@ export function useLibrary() {
       if (!apiKey) return;
 
       try {
-        const response = await fetch(`https://api.rawg.io/api/games/${item.gameId}?key=${apiKey}`);
-        if (!response.ok) throw new Error("API Fetch failed");
-        
-        const data = await response.json();
+        const data = await getGameDetails(item.gameId);
         
         await updateDoc(doc(db, "library", item.id), {
           platforms: data.platforms?.map((p: any) => p.platform.name) || [],
