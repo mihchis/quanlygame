@@ -1,0 +1,20 @@
+{
+  "name": "game-manager",
+  "version": "1.0.0",
+  "description": "Ứng dụng quản lý game chơi cá nhân bằng Electron và RAWG API",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "keywords": [
+    "electron",
+    "game",
+    "manager",
+    "rawg"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^31.7.7"
+  }
+}

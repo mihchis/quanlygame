@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 400" width="100%" height="100%">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e1b4b" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+  </defs>
+  <rect width="100%" height="100%" fill="url(#grad)" rx="12"/>
+  <rect width="92%" height="94%" x="4%" y="3%" fill="none" stroke="#ffffff" stroke-opacity="0.05" stroke-width="2" rx="10"/>
+  <g transform="translate(100, 130)" stroke="#8b5cf6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.35">
+    <path d="M70.3 30H29.7C20.6 30 13 37.6 13 46.7v20.6C13 76.4 20.6 84 29.7 84h3l4.9-9h44.8l4.9 9h3c9.1 0 16.7-7.6 16.7-16.7V46.7C107 37.6 99.4 30 90.3 30z"/>
+    <circle cx="82" cy="51" r="5" fill="#8b5cf6" />
+    <circle cx="94" cy="61" r="5" fill="#8b5cf6" />
+    <circle cx="82" cy="71" r="5" fill="#8b5cf6" />
+    <circle cx="70" cy="61" r="5" fill="#8b5cf6" />
+    <path d="M37 61h16M45 53v16" />
+  </g>
+  <text x="50%" y="270" dominant-baseline="middle" text-anchor="middle" fill="#94a3b8" font-family="'Outfit', sans-serif" font-size="15" font-weight="600" opacity="0.7">CHƯA CÓ ẢNH</text>
+  <text x="50%" y="295" dominant-baseline="middle" text-anchor="middle" fill="#64748b" font-family="'Outfit', sans-serif" font-size="12" opacity="0.7">Thư viện GameVault</text>
+</svg>

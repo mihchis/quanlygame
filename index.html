@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GameVault - Quản lý Kho Game Cá Nhân</title>
+  <!-- Link Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="src/css/style.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="app-sidebar">
+      <div class="sidebar-header">
+        <div class="logo-container">
+          <svg class="logo-icon" viewBox="0 0 24 24" width="32" height="32">
+            <path fill="currentColor" d="M17.3 6H6.7C4.6 6 3 7.6 3 9.7v4.6c0 2.1 1.6 3.7 3.7 3.7h.7l1.1-2h7l1.1 2h.7c2.1 0 3.7-1.6 3.7-3.7V9.7C21 7.6 19.4 6 17.3 6zM9 13.5H7.5V15H6v-1.5H4.5V12H6v-1.5h1.5V12H9v1.5zm3.75-2.75c-.4 0-.75-.3-.75-.75s.3-.75.75-.75.75.3.75.75-.3.75-.75.75zm1.5 2.5c-.4 0-.75-.3-.75-.75s.3-.75.75-.75.75.3.75.75-.3.75-.75.75zm0-5c-.4 0-.75-.3-.75-.75s.3-.75.75-.75.75.3.75.75-.3.75-.75.75zm1.5 2.5c-.4 0-.75-.3-.75-.75s.3-.75.75-.75.75.3.75.75-.3.75-.75.75z"/>
+          </svg>
+          <span class="logo-text">GameVault</span>
+        </div>
+        <button class="sidebar-toggle-btn" id="btn-sidebar-toggle" title="Thu nhỏ / Mở rộng sidebar">
+          <svg class="toggle-icon-open" viewBox="0 0 24 24" width="18" height="18">
+            <path fill="currentColor" d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6z"/>
+          </svg>
+          <svg class="toggle-icon-closed" viewBox="0 0 24 24" width="18" height="18" style="display:none;">
+            <path fill="currentColor" d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/>
+          </svg>
+        </button>
+      </div>
+
+      <nav class="sidebar-menu">
+        <a href="#" class="menu-item active" data-tab="dashboard" id="nav-dashboard" data-tooltip="Tổng quan">
+          <svg viewBox="0 0 24 24" width="20" height="20" class="menu-icon"><path fill="currentColor" d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+          <span class="menu-label">Tổng quan</span>
+        </a>
+        <a href="#" class="menu-item" data-tab="discover" id="nav-discover" data-tooltip="Khám phá">
+          <svg viewBox="0 0 24 24" width="20" height="20" class="menu-icon"><path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm1.88-11.88L16 16l-7.88-2.12L6 8l7.88 2.12zM12 11c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1z"/></svg>
+          <span class="menu-label">Khám phá</span>
+        </a>
+        <a href="#" class="menu-item" data-tab="playing" id="nav-playing" data-tooltip="Đang chơi">
+          <svg viewBox="0 0 24 24" width="20" height="20" class="menu-icon"><path fill="currentColor" d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm4.5 3c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm3-3c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+          <span class="menu-label">Đang chơi</span>
+          <span class="badge" id="badge-playing">0</span>
+        </a>
+        <a href="#" class="menu-item" data-tab="backlog" id="nav-backlog" data-tooltip="Muốn chơi">
+          <svg viewBox="0 0 24 24" width="20" height="20" class="menu-icon"><path fill="currentColor" d="M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2zm0 15l-5-2.18L7 18V5h10v13z"/></svg>
+          <span class="menu-label">Muốn chơi</span>
+          <span class="badge" id="badge-backlog">0</span>
+        </a>
+        <a href="#" class="menu-item" data-tab="completed" id="nav-completed" data-tooltip="Đã chơi">
+          <svg viewBox="0 0 24 24" width="20" height="20" class="menu-icon"><path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+          <span class="menu-label">Đã chơi</span>
+          <span class="badge" id="badge-completed">0</span>
+        </a>
+        <a href="#" class="menu-item" data-tab="search" id="nav-search" data-tooltip="Tìm kiếm">
+          <svg viewBox="0 0 24 24" width="20" height="20" class="menu-icon"><path fill="currentColor" d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+          <span class="menu-label">Tìm kiếm game</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <a href="#" class="menu-item" data-tab="settings" id="nav-settings" data-tooltip="Cài đặt">
+          <svg viewBox="0 0 24 24" width="20" height="20" class="menu-icon"><path fill="currentColor" d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+          <span class="menu-label">Cài đặt</span>
+        </a>
+        <div class="api-status-container" id="api-status-container">
+          <span class="status-dot red" id="api-status-dot"></span>
+          <span class="status-text" id="api-status-text">Chưa cấu hình API</span>
+        </div>
+      </div>
+    </aside>
+
+
+    <!-- MAIN APP CONTENT -->
+    <main class="main-content">
+      <!-- TOPBAR -->
+      <header class="top-bar">
+        <h1 class="view-title" id="current-view-title">Tổng quan</h1>
+        <div class="quick-actions">
+          <div class="user-stats-pill">
+            <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+            <span id="quick-total-hours">0h chơi</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- VIEW PAGES -->
+      <div class="view-container">
+        <!-- 0. DISCOVER VIEW -->
+        <section class="view-pane" id="view-discover">
+
+          <!-- Genre Browser Section -->
+          <div class="discover-section" style="margin-bottom: 40px;">
+            <h2 class="search-section-header" style="margin-bottom: 14px;">🎮 Duyệt theo Thể loại (Genres)</h2>
+            <div id="genres-loading" class="loading-spinner-wrapper" style="height: 60px;">
+              <div class="spinner"></div>
+            </div>
+            <div id="genres-grid" class="genres-grid" style="display: none;">
+              <!-- Dynamic Genre Cards -->
+            </div>
+          </div>
+
+          <!-- Developers Section -->
+          <div class="discover-section" style="margin-bottom: 40px;">
+            <h2 class="search-section-header" style="margin-bottom: 14px;">🏢 Duyệt theo Nhà phát triển (Developers)</h2>
+            <div id="developers-loading" class="loading-spinner-wrapper" style="height: 60px;">
+              <div class="spinner"></div>
+            </div>
+            <div id="developers-grid" class="genres-grid" style="display: none;">
+              <!-- Dynamic Developer Cards -->
+            </div>
+          </div>
+
+          <!-- Creators Section -->
+          <div class="discover-section" style="margin-bottom: 40px;">
+            <h2 class="search-section-header" style="margin-bottom: 14px;">👤 Duyệt theo Người sáng tạo (Creators)</h2>
+            <div id="creators-loading" class="loading-spinner-wrapper" style="height: 60px;">
+              <div class="spinner"></div>
+            </div>
+            <div id="creators-cloud" style="display: none; display: flex; flex-wrap: wrap; gap: 8px;">
+              <!-- Dynamic Creator Pills -->
+            </div>
+          </div>
+
+          <!-- Popular Tags Section -->
+          <div class="discover-section" style="margin-bottom: 40px;">
+            <h2 class="search-section-header" style="margin-bottom: 14px;">🏷️ Tags Phổ biến</h2>
+            <div id="tags-loading" class="loading-spinner-wrapper" style="height: 60px;">
+              <div class="spinner"></div>
+            </div>
+            <div id="tags-cloud" style="display: none; display: flex; flex-wrap: wrap; gap: 8px;">
+              <!-- Dynamic Tag Pills -->
+            </div>
+          </div>
+
+          <!-- Browse Results Section (shown after clicking genre/tag) -->
+          <div id="browse-results-section" style="margin-bottom: 40px; display: none;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
+              <h2 class="search-section-header" id="browse-results-title">Kết quả duyệt</h2>
+              <button id="btn-browse-back" class="btn btn-secondary" style="font-size: 12px; padding: 6px 14px;">
+                ← Quay lại
+              </button>
+            </div>
+            
+            <!-- Description of the browsed genre/tag -->
+            <div id="browse-results-desc" class="glass-card scrollbar-custom" style="padding: 20px; margin-bottom: 24px; font-size: 13.5px; line-height: 1.6; color: var(--text-light); display: none; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-glass); border-radius: 12px; max-height: 160px; overflow-y: auto;">
+              <!-- Loaded dynamically -->
+            </div>
+
+            <div id="browse-results-loading" class="loading-spinner-wrapper" style="display: none;">
+              <div class="spinner"></div>
+            </div>
+            <div class="game-grid" id="browse-results-grid">
+              <!-- Dynamic Browse Results -->
+            </div>
+            <div class="load-more-container" id="browse-load-more-container" style="text-align: center; margin-top: 20px; display: none;">
+              <button class="btn btn-secondary" id="btn-browse-load-more">Xem thêm</button>
+            </div>
+          </div>
+
+          <!-- Trending Games Section -->
+          <div class="discover-section" style="margin-bottom: 40px;">
+            <h2 class="search-section-header" style="margin-bottom: 20px;">🔥 Mọi người đang chơi (Trending)</h2>
+            <div id="discover-trending-loading" class="loading-spinner-wrapper">
+              <div class="spinner"></div>
+              <p>Đang tải danh sách game đang hot...</p>
+            </div>
+            <div class="game-grid" id="discover-trending-grid">
+              <!-- Dynamic Trending Games -->
+            </div>
+            <div class="load-more-container" id="trending-load-more-container" style="text-align: center; margin-top: 20px;">
+              <button class="btn btn-secondary" id="btn-trending-load-more">Xem thêm</button>
+            </div>
+          </div>
+
+
+          <!-- Upcoming Games Section -->
+          <div class="discover-section">
+            <h2 class="search-section-header" style="margin-bottom: 20px;">📅 Siêu phẩm sắp ra mắt (Upcoming)</h2>
+            <div id="discover-upcoming-loading" class="loading-spinner-wrapper">
+              <div class="spinner"></div>
+              <p>Đang tải danh sách game sắp phát hành...</p>
+            </div>
+            <div class="game-grid" id="discover-upcoming-grid">
+              <!-- Dynamic Upcoming Games -->
+            </div>
+            <div class="load-more-container" id="upcoming-load-more-container" style="text-align: center; margin-top: 20px;">
+              <button class="btn btn-secondary" id="btn-upcoming-load-more">Xem thêm</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- 1. DASHBOARD VIEW -->
+        <section class="view-pane active" id="view-dashboard">
+          <div class="dashboard-stats-grid">
+            <div class="stat-card glass-card">
+              <div class="stat-icon-wrapper purple">
+                <svg viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 10H3V8h18v8z"/></svg>
+              </div>
+              <div class="stat-info">
+                <span class="stat-label">Tổng cộng</span>
+                <span class="stat-value" id="stat-total-games">0</span>
+                <span class="stat-desc">Tất cả game quản lý</span>
+              </div>
+            </div>
+
+            <div class="stat-card glass-card">
+              <div class="stat-icon-wrapper blue">
+                <svg viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H7c0-2.76 2.24-5 5-5s5 2.24 5 5c0 1.04-.42 1.99-1.07 2.75z"/></svg>
+              </div>
+              <div class="stat-info">
+                <span class="stat-label">Đang chơi</span>
+                <span class="stat-value" id="stat-playing-games">0</span>
+                <span class="stat-desc">Đang chơi dở dang</span>
+              </div>
+            </div>
+
+            <div class="stat-card glass-card">
+              <div class="stat-icon-wrapper orange">
+                <svg viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2z"/></svg>
+              </div>
+              <div class="stat-info">
+                <span class="stat-label">Muốn chơi</span>
+                <span class="stat-value" id="stat-backlog-games">0</span>
+                <span class="stat-desc">Backlog chờ cày</span>
+              </div>
+            </div>
+
+            <div class="stat-card glass-card">
+              <div class="stat-icon-wrapper green">
+                <svg viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+              </div>
+              <div class="stat-info">
+                <span class="stat-label">Đã chơi xong</span>
+                <span class="stat-value" id="stat-completed-games">0</span>
+                <span class="stat-desc">Đã hoàn thành</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="dashboard-details-grid">
+            <!-- LEFT: CURRENTLY PLAYING SPOTLIGHT -->
+            <div class="spotlight-card glass-card">
+              <h3 class="section-title">🎮 Đang Chơi Gần Đây</h3>
+              <div id="dashboard-playing-spotlight" class="spotlight-content">
+                <!-- Dynamic Content -->
+                <div class="no-game-placeholder">
+                  <p>Bạn đang không chơi game nào. Hãy thêm hoặc chuyển một game sang trạng thái "Đang chơi"!</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- RIGHT: BACKLOG PROMPT & CHARTS -->
+            <div class="actionable-card glass-card">
+              <h3 class="section-title">🎲 Thử Thách Tiếp Theo (Giải quyết Backlog)</h3>
+              <div id="dashboard-backlog-roulette" class="roulette-content">
+                <!-- Dynamic Backlog Suggestion -->
+                <div class="no-game-placeholder">
+                  <p>Backlog của bạn đang trống. Vào mục Tìm kiếm để lưu các game muốn chơi!</p>
+                </div>
+              </div>
+              
+              <hr class="card-divider">
+              
+              <h3 class="section-title">📊 Tỷ lệ trạng thái game</h3>
+              <div class="game-progress-bar-container">
+                <div class="progress-bar-legend">
+                  <span class="legend-item"><span class="legend-color playing"></span> Đang chơi</span>
+                  <span class="legend-item"><span class="legend-color backlog"></span> Muốn chơi</span>
+                  <span class="legend-item"><span class="legend-color completed"></span> Đã chơi</span>
+                </div>
+                <div class="stacked-progress-bar" id="dashboard-progress-bar">
+                  <div class="bar-segment playing" style="width: 0%"></div>
+                  <div class="bar-segment backlog" style="width: 0%"></div>
+                  <div class="bar-segment completed" style="width: 0%"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 2. PLAYING VIEW -->
+        <section class="view-pane" id="view-playing">
+          <div class="list-actions-bar">
+            <input type="text" class="search-input-field" placeholder="Tìm kiếm trong danh sách này..." id="playing-search-input">
+          </div>
+          <div class="game-grid" id="playing-game-grid">
+            <!-- Dynamic Playing Games -->
+          </div>
+        </section>
+
+        <!-- 3. BACKLOG VIEW -->
+        <section class="view-pane" id="view-backlog">
+          <div class="list-actions-bar">
+            <input type="text" class="search-input-field" placeholder="Tìm kiếm trong danh sách này..." id="backlog-search-input">
+          </div>
+          <div class="game-grid" id="backlog-game-grid">
+            <!-- Dynamic Backlog Games -->
+          </div>
+        </section>
+
+        <!-- 4. COMPLETED VIEW -->
+        <section class="view-pane" id="view-completed">
+          <div class="list-actions-bar">
+            <input type="text" class="search-input-field" placeholder="Tìm kiếm trong danh sách này..." id="completed-search-input">
+          </div>
+          <div class="game-grid" id="completed-game-grid">
+            <!-- Dynamic Completed Games -->
+          </div>
+        </section>
+
+        <!-- 5. SEARCH VIEW -->
+        <section class="view-pane" id="view-search">
+          <div class="search-bar-container">
+            <div class="search-box">
+              <svg class="search-icon" viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+              <input type="text" id="rawg-search-input" placeholder="Nhập tên game để tìm kiếm từ thư viện RAWG toàn cầu...">
+              <button class="btn btn-primary" id="btn-rawg-search">Tìm kiếm</button>
+            </div>
+          </div>
+
+          <div class="search-results-section">
+            <h2 class="search-section-header" id="search-results-title">Game phổ biến năm nay</h2>
+            
+            <div id="search-loading" class="loading-spinner-wrapper hidden">
+              <div class="spinner"></div>
+              <p>Đang tìm kiếm dữ liệu từ RAWG...</p>
+            </div>
+            
+            <div class="game-grid" id="search-game-grid">
+              <!-- Dynamic RAWG Search Results / Popular Games -->
+            </div>
+            <div class="load-more-container" id="search-load-more-container" style="text-align: center; margin-top: 20px; margin-bottom: 20px;">
+              <button class="btn btn-secondary" id="btn-search-load-more">Xem thêm</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- 6. SETTINGS VIEW -->
+        <section class="view-pane" id="view-settings">
+          <div class="settings-content-wrapper">
+            <!-- API Key Card -->
+            <div class="settings-card glass-card">
+              <h3 class="settings-card-title">🔑 Cấu hình RAWG API</h3>
+              <p class="settings-card-desc">Ứng dụng cần API Key từ RAWG để lấy hình ảnh, mô tả và tìm kiếm game. API Key này là hoàn toàn miễn phí.</p>
+              
+              <div class="form-group">
+                <label for="input-api-key">RAWG API Key</label>
+                <div class="input-with-button">
+                  <input type="password" id="input-api-key" placeholder="Nhập RAWG API Key tại đây...">
+                  <button class="btn btn-secondary" id="btn-toggle-key">Hiện</button>
+                </div>
+              </div>
+              
+              <div class="settings-actions">
+                <button class="btn btn-primary" id="btn-save-key">Lưu cấu hình</button>
+                <button class="btn btn-secondary" id="btn-test-key">Kiểm tra kết nối</button>
+              </div>
+              <p id="key-test-feedback" class="feedback-message"></p>
+            </div>
+
+            <!-- DxDiag Card -->
+            <div class="settings-card glass-card">
+              <h3 class="settings-card-title">💻 Cấu hình Hệ thống (DxDiag)</h3>
+              <p class="settings-card-desc">Tải lên tệp tin <code>dxdiag.txt</code> của bạn để ứng dụng tự động đối chiếu cấu hình phần cứng khi xem thông tin game.</p>
+              
+              <div class="form-group">
+                <label>File DxDiag của bạn</label>
+                <div class="input-with-button">
+                  <button class="btn btn-secondary" id="btn-upload-dxdiag">Chọn file dxdiag.txt</button>
+                  <span id="dxdiag-file-name" class="status-text" style="align-self: center; margin-left: 10px;">Chưa tải lên cấu hình</span>
+                </div>
+                <input type="file" id="dxdiag-file-input" style="display: none;" accept=".txt">
+              </div>
+
+              <!-- Specs Preview -->
+              <div class="system-specs-preview hidden" id="dxdiag-specs-preview" style="background: rgba(0,0,0,0.2); padding: 14px; border-radius: 8px; font-size:13px; margin-top: 14px; border: 1px solid var(--border-glass);">
+                <div style="display:grid; grid-template-columns: 100px 1fr; gap: 8px;">
+                  <strong>Hệ điều hành:</strong> <span id="spec-preview-os">--</span>
+                  <strong>CPU:</strong> <span id="spec-preview-cpu">--</span>
+                  <strong>RAM:</strong> <span id="spec-preview-ram">--</span>
+                  <strong>GPU (Card):</strong> <span id="spec-preview-gpu">--</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Import/Export Card -->
+            <div class="settings-card glass-card">
+              <h3 class="settings-card-title">💾 Quản lý Dữ liệu</h3>
+              <p class="settings-card-desc">Lưu trữ hoặc khôi phục dữ liệu danh sách game của bạn (dưới dạng tệp tin JSON).</p>
+              
+              <div class="settings-data-actions">
+                <button class="btn btn-secondary" id="btn-export-data">
+                  <svg viewBox="0 0 24 24" width="16" height="16" style="margin-right: 6px;"><path fill="currentColor" d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/></svg>
+                  Xuất dữ liệu (JSON)
+                </button>
+                <button class="btn btn-secondary" id="btn-import-data">
+                  <svg viewBox="0 0 24 24" width="16" height="16" style="margin-right: 6px;"><path fill="currentColor" d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM19 18H6c-2.21 0-4-1.79-4-4 0-2.05 1.53-3.76 3.56-3.97l1.07-.11.5-.95C8.08 7.14 9.94 6 12 6c2.62 0 4.88 1.86 5.39 4.43l.3 1.5 1.53.11c1.56.1 2.78 1.41 2.78 2.96 0 1.65-1.35 3-3 3zm-8-5v4h2v-4h3l-4-4-4 4h3z"/></svg>
+                  Nhập dữ liệu (JSON)
+                </button>
+                <input type="file" id="import-file-input" style="display: none;" accept=".json">
+                <button class="btn btn-danger" id="btn-clear-all">Xóa tất cả dữ liệu</button>
+              </div>
+            </div>
+
+            <!-- Help & Guide Card -->
+            <div class="settings-card glass-card">
+              <h3 class="settings-card-title">📘 Hướng dẫn lấy RAWG API Key miễn phí</h3>
+              <ol class="guide-list">
+                <li>Truy cập trang web <a href="https://rawg.io/" target="_blank">rawg.io</a> và tạo một tài khoản (hoặc đăng nhập nếu đã có).</li>
+                <li>Sau khi đăng nhập thành công, hãy truy cập trang <a href="https://rawg.io/apikeys" target="_blank">rawg.io/apikeys</a>.</li>
+                <li>Nhấp vào nút <strong>"Create key"</strong> (hoặc Yêu cầu Key). Điền tên dự án bất kỳ (ví dụ: <em>GameVault App</em>) và mục đích sử dụng phi thương mại.</li>
+                <li>Sao chép mã API Key nhận được và dán vào ô cấu hình ở trên để kích hoạt đầy đủ chức năng tìm kiếm game.</li>
+              </ol>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <!-- GAME DETAIL MODAL -->
+  <div class="modal-overlay" id="game-detail-modal">
+    <div class="modal-container glass-card animate-fade-in">
+      <button class="modal-close-btn" id="btn-close-modal">
+        <svg viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+      </button>
+
+      <div class="modal-content-grid">
+        <!-- Left Pane: Media & Meta -->
+        <div class="modal-left-pane">
+          <div class="modal-game-cover-container">
+            <img src="" alt="Game Cover" class="modal-game-cover" id="modal-cover-img">
+            <div class="metacritic-badge-large" id="modal-meta-score">--</div>
+          </div>
+          
+          <!-- Screenshots Carousel -->
+          <div class="screenshot-carousel-section">
+            <h4 class="mini-title">Hình ảnh trong game</h4>
+            <div class="screenshots-slider" id="modal-screenshots-container">
+              <!-- Dynamic Screenshots -->
+            </div>
+          </div>
+
+          <!-- Trailers Section -->
+          <div class="modal-trailers-section" id="modal-trailers-section" style="margin-top: 20px; display: none;">
+            <h4 class="mini-title" style="margin-bottom: 8px;">Trailer Trò chơi</h4>
+            <div class="modal-trailer-wrapper" style="position: relative; border-radius: 8px; overflow: hidden; border: 1px solid var(--border-glass); background: rgba(0,0,0,0.4);">
+              <video id="modal-trailer-video" controls width="100%" style="display: block; border-radius: 8px; max-height: 240px; object-fit: contain;"></video>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Pane: Edit Status & Info -->
+        <div class="modal-right-pane">
+          <h2 class="modal-game-title" id="modal-title">Tên Game</h2>
+          <p class="modal-game-meta-row" id="modal-release-dev">Ngày phát hành: -- | Phát triển: --</p>
+          
+          <div class="modal-game-description scrollbar-custom" id="modal-description">
+            Đang tải mô tả game...
+          </div>
+
+          <!-- Game Metadata Details -->
+          <div class="modal-metadata-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 20px; font-size: 13px; background: rgba(0, 0, 0, 0.25); padding: 16px; border-radius: 8px; border: 1px solid var(--border-glass);">
+            <div><strong style="color: var(--text-muted);">Thể loại:</strong> <span id="modal-genres">--</span></div>
+            <div><strong style="color: var(--text-muted);">Hệ máy:</strong> <span id="modal-platforms" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: inline-block; max-width: 140px; vertical-align: bottom;" title="">--</span></div>
+            <div><strong style="color: var(--text-muted);">Nhà phát hành:</strong> <span id="modal-publishers">--</span></div>
+            <div><strong style="color: var(--text-muted);">Độ tuổi (ESRB):</strong> <span id="modal-esrb">--</span></div>
+            <div><strong style="color: var(--text-muted);">Thời lượng TB:</strong> <span id="modal-playtime">--</span></div>
+            <div><strong style="color: var(--text-muted);">Trang chủ:</strong> <a id="modal-website" href="#" target="_blank" style="color: var(--accent-purple); text-decoration: none; font-weight: 500;">Link</a></div>
+            <div><strong style="color: var(--text-muted);">Metacritic chi tiết:</strong> <span id="modal-metacritic-detail" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: inline-block; max-width: 140px; vertical-align: bottom;" title="">--</span></div>
+            <div><strong style="color: var(--text-muted);">Tên khác:</strong> <span id="modal-alt-names" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: inline-block; max-width: 140px; vertical-align: bottom;" title="">--</span></div>
+            <div><strong style="color: var(--text-muted);">Thành tựu:</strong> <span id="modal-achievements">--</span></div>
+            <div><strong style="color: var(--text-muted);">Lượng sở hữu:</strong> <span id="modal-added-count">--</span></div>
+            <div><strong style="color: var(--text-muted);">Cộng đồng Reddit:</strong> <a id="modal-reddit" href="#" target="_blank" style="color: var(--accent-purple); text-decoration: none; font-weight: 500;">Link</a></div>
+          </div>
+
+          <!-- RAWG Ratings Chart Section -->
+          <div class="modal-ratings-chart-section" id="modal-ratings-chart-section" style="margin-bottom: 20px;">
+            <h4 class="mini-title" style="margin-bottom: 8px;">Đánh giá từ cộng đồng RAWG</h4>
+            <div id="modal-ratings-chart" style="display: flex; height: 14px; border-radius: 6px; overflow: hidden; background: rgba(255,255,255,0.05); margin-bottom: 8px;"></div>
+            <div id="modal-ratings-legend" style="display: flex; flex-wrap: wrap; gap: 12px; font-size: 11px; color: var(--text-light);"></div>
+          </div>
+
+          <!-- Game Stores Section -->
+          <div class="modal-stores-section" id="modal-stores-section" style="margin-bottom: 20px; display: none;">
+            <h4 class="mini-title" style="margin-bottom: 8px;">Nơi mua game (Stores)</h4>
+            <div id="modal-stores-container" style="display: flex; flex-wrap: wrap; gap: 8px;">
+              <!-- Dynamic Store Links -->
+            </div>
+          </div>
+
+          <div class="modal-tags-section" style="margin-bottom: 20px;">
+            <h4 class="mini-title" style="margin-bottom: 8px;">Nhãn (Tags)</h4>
+            <div id="modal-tags-container" style="display: flex; flex-wrap: wrap; gap: 6px;">
+              <!-- Dynamic Tags -->
+            </div>
+          </div>
+
+          <!-- Similar Games Section -->
+          <div class="modal-similar-section" style="margin-bottom: 20px;">
+            <h4 class="mini-title" style="margin-bottom: 8px;">Game tương tự</h4>
+            <div id="modal-similar-container" style="display: flex; gap: 10px; overflow-x: auto; padding-bottom: 6px;" class="scrollbar-custom">
+              <!-- Dynamic Similar Games -->
+            </div>
+          </div>
+
+          <!-- Achievements List Section -->
+          <div class="modal-achievements-list-section" id="modal-achievements-list-section" style="margin-bottom: 20px; display: none;">
+            <h4 class="mini-title" style="margin-bottom: 8px;">Thành tựu (Achievements)</h4>
+            <div id="modal-achievements-container" style="display: flex; gap: 10px; overflow-x: auto; padding-bottom: 6px;" class="scrollbar-custom">
+              <!-- Dynamic Achievements -->
+            </div>
+          </div>
+
+          <!-- Base Game Section -->
+          <div class="modal-parents-section" id="modal-parents-section" style="margin-bottom: 20px; display: none;">
+            <h4 class="mini-title" style="margin-bottom: 8px;">Game gốc (Base Game)</h4>
+            <div id="modal-parents-container" style="display: flex; gap: 10px; overflow-x: auto; padding-bottom: 6px;" class="scrollbar-custom">
+              <!-- Dynamic Parent Games -->
+            </div>
+          </div>
+
+          <!-- DLCs & Expansions Section -->
+          <div class="modal-additions-section" id="modal-additions-section" style="margin-bottom: 20px; display: none;">
+            <h4 class="mini-title" style="margin-bottom: 8px;">Bản mở rộng & DLC (Additions)</h4>
+            <div id="modal-additions-container" style="display: flex; gap: 10px; overflow-x: auto; padding-bottom: 6px;" class="scrollbar-custom">
+              <!-- Dynamic Additions -->
+            </div>
+          </div>
+
+          <!-- Development Team Section -->
+          <div class="modal-team-section" id="modal-team-section" style="margin-bottom: 20px; display: none;">
+            <h4 class="mini-title" style="margin-bottom: 8px;">Đội ngũ phát triển (Development Team)</h4>
+            <div id="modal-team-container" style="display: flex; gap: 10px; overflow-x: auto; padding-bottom: 6px;" class="scrollbar-custom">
+              <!-- Dynamic Team Members -->
+            </div>
+          </div>
+
+          <!-- Game Series Section -->
+          <div class="modal-series-section" id="modal-series-section" style="margin-bottom: 20px; display: none;">
+            <h4 class="mini-title" style="margin-bottom: 8px;">Cùng dòng game (Game Series)</h4>
+            <div id="modal-series-container" style="display: flex; gap: 10px; overflow-x: auto; padding-bottom: 6px;" class="scrollbar-custom">
+              <!-- Dynamic Game Series -->
+            </div>
+          </div>
+
+          <!-- Reddit Posts Section -->
+          <div class="modal-reddit-posts-section" id="modal-reddit-posts-section" style="margin-bottom: 20px; display: none;">
+            <h4 class="mini-title" style="margin-bottom: 8px;">Bài viết từ Reddit</h4>
+            <div id="modal-reddit-posts-container" style="display: flex; flex-direction: column; gap: 10px;">
+              <!-- Dynamic Reddit Posts -->
+            </div>
+          </div>
+
+          <!-- Twitch Streams Section -->
+          <div class="modal-twitch-section" id="modal-twitch-section" style="margin-bottom: 20px; display: none;">
+            <h4 class="mini-title" style="margin-bottom: 8px;">Twitch Streams nổi bật</h4>
+            <div id="modal-twitch-container" style="display: flex; gap: 10px; overflow-x: auto; padding-bottom: 6px;" class="scrollbar-custom">
+              <!-- Dynamic Twitch Streams -->
+            </div>
+          </div>
+
+          <!-- YouTube Videos Section -->
+          <div class="modal-youtube-section" id="modal-youtube-section" style="margin-bottom: 20px; display: none;">
+            <h4 class="mini-title" style="margin-bottom: 8px;">Videos từ YouTube</h4>
+            <div id="modal-youtube-container" style="display: flex; gap: 10px; overflow-x: auto; padding-bottom: 6px;" class="scrollbar-custom">
+              <!-- Dynamic YouTube Videos -->
+            </div>
+          </div>
+
+          <!-- DxDiag specs matching panel -->
+          <div class="dxdiag-check-section hidden" id="modal-dxdiag-container">
+            <h3 class="section-title">💻 Đối chiếu cấu hình chơi Game (trên PC)</h3>
+            <div class="dxdiag-result-table-wrapper">
+              <table class="dxdiag-table">
+                <thead>
+                  <tr>
+                    <th>Phần cứng</th>
+                    <th>Máy của bạn</th>
+                    <th>Yêu cầu game</th>
+                    <th>Đánh giá</th>
+                  </tr>
+                </thead>
+                <tbody id="dxdiag-comparison-rows">
+                  <!-- Dynamic Spec Comparison Rows -->
+                </tbody>
+              </table>
+            </div>
+            <div class="dxdiag-verdict" id="dxdiag-verdict-text">
+              <!-- Dynamic overall status text -->
+            </div>
+          </div>
+
+          <div class="status-config-box">
+            <h3 class="section-title">📂 Trạng thái của bạn</h3>
+            
+            <div class="form-row">
+              <div class="form-group flex-1">
+                <label for="select-game-status">Trạng thái</label>
+                <select id="select-game-status">
+                  <option value="none">Chưa lưu vào danh sách</option>
+                  <option value="playing">🎮 Đang chơi</option>
+                  <option value="backlog">📋 Muốn chơi (Backlog)</option>
+                  <option value="completed">🏆 Đã chơi xong</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row hidden" id="row-substatus-platform">
+              <div class="form-group flex-1">
+                <label for="select-game-substatus">Phân loại chi tiết</label>
+                <select id="select-game-substatus">
+                  <option value="none">Không có phân loại</option>
+                </select>
+              </div>
+              <div class="form-group flex-1">
+                <label for="select-game-platform">Hệ máy chơi</label>
+                <select id="select-game-platform">
+                  <option value="none">Chưa chọn hệ máy</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Dynamic Settings Fields based on Status Selection -->
+            <!-- 1. Playing Fields -->
+            <div class="status-fields hidden" id="fields-playing">
+              <div class="form-row">
+                <div class="form-group flex-1">
+                  <label for="input-playing-hours">Số giờ chơi đã tích lũy</label>
+                  <input type="number" id="input-playing-hours" min="0" step="0.1" value="0">
+                </div>
+                <div class="form-group flex-1">
+                  <label for="input-playing-start">Ngày bắt đầu chơi</label>
+                  <input type="date" id="input-playing-start">
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="input-playing-notes">Ghi chú hành trình chơi</label>
+                <textarea id="input-playing-notes" placeholder="Mục tiêu tiếp theo, cảm xúc hiện tại..." rows="3"></textarea>
+              </div>
+            </div>
+
+            <!-- 2. Backlog Fields -->
+            <div class="status-fields hidden" id="fields-backlog">
+              <div class="form-row">
+                <div class="form-group flex-1">
+                  <label for="select-backlog-priority">Mức độ ưu tiên chơi</label>
+                  <select id="select-backlog-priority">
+                    <option value="high">🔥 Rất cao (Chơi ngay)</option>
+                    <option value="medium" selected>⚡ Trung bình (Chờ lượt)</option>
+                    <option value="low">💤 Thấp (Rảnh thì chơi)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- 3. Completed Fields -->
+            <div class="status-fields hidden" id="fields-completed">
+              <div class="form-row">
+                <div class="form-group flex-1">
+                  <label>Đánh giá cá nhân</label>
+                  <div class="star-rating-selector" id="completed-rating-stars">
+                    <span class="star-btn" data-value="1">★</span>
+                    <span class="star-btn" data-value="2">★</span>
+                    <span class="star-btn" data-value="3">★</span>
+                    <span class="star-btn" data-value="4">★</span>
+                    <span class="star-btn" data-value="5">★</span>
+                  </div>
+                </div>
+                <div class="form-group flex-1">
+                  <label for="input-completed-date">Ngày hoàn thành</label>
+                  <input type="date" id="input-completed-date">
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="input-completed-review">Đánh giá / Cảm nhận về game</label>
+                <textarea id="input-completed-review" placeholder="Game có gì hay? Có đáng chơi lại không?..." rows="3"></textarea>
+              </div>
+            </div>
+
+            <div class="modal-action-buttons">
+              <button class="btn btn-primary" id="btn-save-modal">Lưu thay đổi</button>
+              <button class="btn btn-danger hidden" id="btn-delete-modal">Xóa khỏi thư viện</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="src/js/app.js"></script>
+</body>
+</html>
