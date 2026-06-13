@@ -195,6 +195,16 @@
 
         <!-- 1. DASHBOARD VIEW -->
         <section class="view-pane active" id="view-dashboard">
+          
+          <!-- Cinematic Hero Banner (Dynamically Rendered) -->
+          <div class="dashboard-hero-banner glass-card" id="dashboard-hero-banner" style="margin-bottom: 24px;">
+            <!-- Dynamic Content loaded from JS -->
+            <div class="no-game-placeholder" style="height: 200px;">
+              <p>Bạn không có game nào đang chơi dở dang. Hãy chuyển game trong danh sách hoặc tìm game mới để bắt đầu hành trình!</p>
+            </div>
+          </div>
+
+          <!-- 4 Stats Cards Grid -->
           <div class="dashboard-stats-grid">
             <div class="stat-card glass-card">
               <div class="stat-icon-wrapper purple">
@@ -241,51 +251,139 @@
             </div>
           </div>
 
-          <div class="dashboard-details-grid">
-            <!-- LEFT: CURRENTLY PLAYING SPOTLIGHT -->
-            <div class="spotlight-card glass-card">
-              <h3 class="section-title">🎮 Đang Chơi Gần Đây</h3>
-              <div id="dashboard-playing-spotlight" class="spotlight-content">
-                <!-- Dynamic Content -->
-                <div class="no-game-placeholder">
-                  <p>Bạn đang không chơi game nào. Hãy thêm hoặc chuyển một game sang trạng thái "Đang chơi"!</p>
+          <!-- Two Column Insights Grid -->
+          <div class="dashboard-details-grid" style="margin-bottom: 24px;">
+            <!-- Column 1: Playtime Leaderboard & Genre Profile -->
+            <div class="actionable-card glass-card">
+              <h3 class="section-title">📊 Gaming Insights (Số liệu thống kê)</h3>
+              
+              <!-- Playtime Leaderboard -->
+              <div class="playtime-leaderboard-section">
+                <h4 style="font-size: 13px; color: var(--text-light); margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
+                  🏆 Chơi nhiều nhất (Top Playtime)
+                </h4>
+                <div id="dashboard-playtime-leaderboard" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
+                  <div class="no-game-placeholder" style="height: 100px; font-size:12px;">
+                    <p>Chưa tích lũy giờ chơi cho game nào.</p>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Genre Breakdown Chart -->
+              <div class="genre-breakdown-section" style="border-top: 1px solid var(--border-glass); padding-top: 16px;">
+                <h4 style="font-size: 13px; color: var(--text-light); margin-bottom: 12px;">
+                  🔮 Phân bố Thể loại (Genre Breakdown)
+                </h4>
+                <div id="dashboard-genre-breakdown" style="display: flex; flex-direction: column; gap: 10px;">
+                  <div class="no-game-placeholder" style="height: 100px; font-size:12px;">
+                    <p>Thêm game vào thư viện để phân tích thể loại.</p>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <!-- RIGHT: BACKLOG PROMPT & CHARTS -->
-            <div class="actionable-card glass-card">
-              <h3 class="section-title">🎲 Thử Thách Tiếp Theo (Giải quyết Backlog)</h3>
-              <div id="dashboard-backlog-roulette" class="roulette-content">
-                <!-- Dynamic Backlog Suggestion -->
-                <div class="no-game-placeholder">
-                  <p>Backlog của bạn đang trống. Vào mục Tìm kiếm để lưu các game muốn chơi!</p>
+            <!-- Column 2: Backlog Roulette & System Diagnostics -->
+            <div style="display: flex; flex-direction: column; gap: 24px;">
+              <!-- Backlog Roulette & Progress -->
+              <div class="actionable-card glass-card" style="flex: 1;">
+                <h3 class="section-title">🎲 Thử Thách Tiếp Theo (Backlog)</h3>
+                <div id="dashboard-backlog-roulette" class="roulette-content" style="margin-bottom: 16px;">
+                  <div class="no-game-placeholder">
+                    <p>Backlog của bạn đang trống. Vào mục Tìm kiếm để lưu các game muốn chơi!</p>
+                  </div>
+                </div>
+                
+                <hr class="card-divider" style="margin: 14px 0;">
+                
+                <h3 class="section-title" style="margin-bottom: 10px;">📊 Tỷ lệ trạng thái game</h3>
+                <div class="game-progress-bar-container">
+                  <div class="progress-bar-legend">
+                    <span class="legend-item"><span class="legend-color playing"></span> Đang chơi</span>
+                    <span class="legend-item"><span class="legend-color backlog"></span> Muốn chơi</span>
+                    <span class="legend-item"><span class="legend-color completed"></span> Đã chơi</span>
+                  </div>
+                  <div class="stacked-progress-bar" id="dashboard-progress-bar">
+                    <div class="bar-segment playing" style="width: 0%"></div>
+                    <div class="bar-segment backlog" style="width: 0%"></div>
+                    <div class="bar-segment completed" style="width: 0%"></div>
+                  </div>
                 </div>
               </div>
               
-              <hr class="card-divider">
-              
-              <h3 class="section-title">📊 Tỷ lệ trạng thái game</h3>
-              <div class="game-progress-bar-container">
-                <div class="progress-bar-legend">
-                  <span class="legend-item"><span class="legend-color playing"></span> Đang chơi</span>
-                  <span class="legend-item"><span class="legend-color backlog"></span> Muốn chơi</span>
-                  <span class="legend-item"><span class="legend-color completed"></span> Đã chơi</span>
-                </div>
-                <div class="stacked-progress-bar" id="dashboard-progress-bar">
-                  <div class="bar-segment playing" style="width: 0%"></div>
-                  <div class="bar-segment backlog" style="width: 0%"></div>
-                  <div class="bar-segment completed" style="width: 0%"></div>
+              <!-- Hardware Specs Widget -->
+              <div class="actionable-card glass-card" style="padding: 20px;">
+                <h3 class="section-title" style="margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
+                  <span>💻 Cấu hình Hệ thống</span>
+                  <button class="btn btn-secondary btn-sm" style="font-size: 11px; padding: 4px 8px;" onclick="switchTab('settings')">Cài đặt</button>
+                </h3>
+                <div id="dashboard-specs-widget">
+                  <!-- Dynamic Content -->
                 </div>
               </div>
             </div>
           </div>
+
+          <!-- Column Row 2: Recent Activity & Showcase -->
+          <div class="dashboard-details-grid" style="margin-bottom: 24px; grid-template-columns: 1fr 1.5fr;">
+            <!-- Column 1: Recent Activity Log -->
+            <div class="actionable-card glass-card">
+              <h3 class="section-title">⏳ Nhật ký Hoạt động</h3>
+              <div id="dashboard-activity-log" style="display: flex; flex-direction: column; gap: 14px;">
+                <!-- Activity list -->
+                <div class="no-game-placeholder" style="height: 150px;">
+                  <p>Chưa có hoạt động nào được ghi lại gần đây.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Column 2: RAWG Recommendations -->
+            <div class="actionable-card glass-card">
+              <h3 class="section-title" style="display: flex; align-items: center; justify-content: space-between;">
+                <span>💡 Gợi ý dành cho bạn</span>
+                <span style="font-size: 11px; color: var(--text-muted); font-weight: 500;">Từ RAWG</span>
+              </h3>
+              <div id="dashboard-recommendations-loading" class="loading-spinner-wrapper" style="height: 150px;">
+                <div class="spinner"></div>
+                <p style="font-size: 12px; color: var(--text-muted); margin-top: 8px;">Đang tìm game đề cử...</p>
+              </div>
+              <div id="dashboard-recommendations-grid" class="game-grid" style="display: none; grid-template-columns: repeat(3, 1fr); gap: 14px;">
+                <!-- Recommendations cards -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom: Completed Showcase Hall of Fame -->
+          <div class="actionable-card glass-card" style="margin-bottom: 10px; padding: 24px;">
+            <h3 class="section-title" style="margin-bottom: 16px;">🏆 Đại sảnh Danh vọng (Hall of Fame)</h3>
+            <div id="dashboard-hall-of-fame" style="display: flex; gap: 16px; overflow-x: auto; padding-bottom: 8px;" class="scrollbar-custom">
+              <div class="no-game-placeholder" style="width: 100%; height: 120px;">
+                <p>Hãy phá đảo một game và đánh giá để vinh danh trò chơi tại đây!</p>
+              </div>
+            </div>
+          </div>
+
         </section>
 
         <!-- 2. PLAYING VIEW -->
         <section class="view-pane" id="view-playing">
           <div class="list-actions-bar">
-            <input type="text" class="search-input-field" placeholder="Tìm kiếm trong danh sách này..." id="playing-search-input">
+            <input type="text" class="search-input-field" placeholder="Tìm kiếm trong danh sách..." id="playing-search-input">
+            <select class="filter-select-field" id="playing-filter-genre">
+              <option value="all">Tất cả thể loại</option>
+            </select>
+            <select class="filter-select-field" id="playing-filter-platform">
+              <option value="all">Tất cả hệ máy</option>
+            </select>
+            <select class="sort-select-field" id="playing-sort">
+              <option value="updated-desc">Mới cập nhật</option>
+              <option value="name-asc">Tên game (A-Z)</option>
+              <option value="name-desc">Tên game (Z-A)</option>
+              <option value="playtime-desc">Giờ chơi (Giảm dần)</option>
+              <option value="playtime-asc">Giờ chơi (Tăng dần)</option>
+              <option value="metacritic-desc">Metacritic (Cao - Thấp)</option>
+              <option value="released-desc">Năm ra mắt (Mới - Cũ)</option>
+              <option value="startdate-desc">Ngày bắt đầu (Mới nhất)</option>
+            </select>
           </div>
           <div class="game-grid" id="playing-game-grid">
             <!-- Dynamic Playing Games -->
@@ -295,7 +393,21 @@
         <!-- 3. BACKLOG VIEW -->
         <section class="view-pane" id="view-backlog">
           <div class="list-actions-bar">
-            <input type="text" class="search-input-field" placeholder="Tìm kiếm trong danh sách này..." id="backlog-search-input">
+            <input type="text" class="search-input-field" placeholder="Tìm kiếm trong danh sách..." id="backlog-search-input">
+            <select class="filter-select-field" id="backlog-filter-genre">
+              <option value="all">Tất cả thể loại</option>
+            </select>
+            <select class="filter-select-field" id="backlog-filter-platform">
+              <option value="all">Tất cả hệ máy</option>
+            </select>
+            <select class="sort-select-field" id="backlog-sort">
+              <option value="updated-desc">Mới cập nhật</option>
+              <option value="name-asc">Tên game (A-Z)</option>
+              <option value="name-desc">Tên game (Z-A)</option>
+              <option value="priority-desc">Ưu tiên (Cao - Thấp)</option>
+              <option value="metacritic-desc">Metacritic (Cao - Thấp)</option>
+              <option value="released-desc">Năm ra mắt (Mới - Cũ)</option>
+            </select>
           </div>
           <div class="game-grid" id="backlog-game-grid">
             <!-- Dynamic Backlog Games -->
@@ -305,7 +417,22 @@
         <!-- 4. COMPLETED VIEW -->
         <section class="view-pane" id="view-completed">
           <div class="list-actions-bar">
-            <input type="text" class="search-input-field" placeholder="Tìm kiếm trong danh sách này..." id="completed-search-input">
+            <input type="text" class="search-input-field" placeholder="Tìm kiếm trong danh sách..." id="completed-search-input">
+            <select class="filter-select-field" id="completed-filter-genre">
+              <option value="all">Tất cả thể loại</option>
+            </select>
+            <select class="filter-select-field" id="completed-filter-platform">
+              <option value="all">Tất cả hệ máy</option>
+            </select>
+            <select class="sort-select-field" id="completed-sort">
+              <option value="updated-desc">Mới cập nhật</option>
+              <option value="name-asc">Tên game (A-Z)</option>
+              <option value="name-desc">Tên game (Z-A)</option>
+              <option value="rating-desc">Đánh giá (Cao - Thấp)</option>
+              <option value="metacritic-desc">Metacritic (Cao - Thấp)</option>
+              <option value="released-desc">Năm ra mắt (Mới - Cũ)</option>
+              <option value="enddate-desc">Ngày hoàn thành (Mới nhất)</option>
+            </select>
           </div>
           <div class="game-grid" id="completed-game-grid">
             <!-- Dynamic Completed Games -->

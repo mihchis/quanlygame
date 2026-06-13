@@ -11,6 +11,64 @@ const playingSearch = document.getElementById('playing-search-input');
 const backlogSearch = document.getElementById('backlog-search-input');
 const completedSearch = document.getElementById('completed-search-input');
 
+// Helper to dynamically populate filter dropdown options from games in the active list
+function populateFilterDropdowns(status, games) {
+  const genreDropdown = document.getElementById(`${status}-filter-genre`);
+  const platformDropdown = document.getElementById(`${status}-filter-platform`);
+
+  if (!genreDropdown || !platformDropdown) return;
+
+  const prevGenre = genreDropdown.value;
+  const prevPlatform = platformDropdown.value;
+
+  genreDropdown.innerHTML = '<option value="all">Tất cả thể loại</option>';
+  platformDropdown.innerHTML = '<option value="all">Tất cả hệ máy</option>';
+
+  const genres = new Set();
+  const platforms = new Set();
+
+  games.forEach(game => {
+    if (game.genres && Array.isArray(game.genres)) {
+      game.genres.forEach(genre => {
+        const name = typeof genre === 'object' ? genre.name : genre;
+        if (name) genres.add(name);
+      });
+    }
+    if (game.platform && game.platform !== 'none') {
+      platforms.add(game.platform);
+    }
+  });
+
+  // Sort and append genres
+  [...genres].sort().forEach(genre => {
+    const opt = document.createElement('option');
+    opt.value = genre;
+    opt.textContent = genre;
+    genreDropdown.appendChild(opt);
+  });
+
+  // Sort and append platforms
+  [...platforms].sort().forEach(platform => {
+    const opt = document.createElement('option');
+    opt.value = platform;
+    opt.textContent = platform;
+    platformDropdown.appendChild(opt);
+  });
+
+  // Restore previous selection if valid
+  if (genres.has(prevGenre)) {
+    genreDropdown.value = prevGenre;
+  } else {
+    genreDropdown.value = 'all';
+  }
+
+  if (platforms.has(prevPlatform)) {
+    platformDropdown.value = prevPlatform;
+  } else {
+    platformDropdown.value = 'all';
+  }
+}
+
 // Render local library list grids
 export function renderListTab(status) {
   let grid, searchField;
@@ -26,21 +84,81 @@ export function renderListTab(status) {
   }
 
   if (!grid) return;
-  grid.innerHTML = '';
   
+  // 1. Get all games with matching status
+  const statusGames = state.localGames.filter(g => g.status === status);
+
+  // 2. Populate filter options
+  populateFilterDropdowns(status, statusGames);
+
+  // 3. Get current values
+  const genreFilter = document.getElementById(`${status}-filter-genre`)?.value || 'all';
+  const platformFilter = document.getElementById(`${status}-filter-platform`)?.value || 'all';
+  const sortBy = document.getElementById(`${status}-sort`)?.value || 'updated-desc';
   const searchVal = searchField ? searchField.value.toLowerCase().trim() : '';
-  
-  // Filter games by status and search query
-  const filtered = state.localGames.filter(g => {
-    const matchStatus = g.status === status;
+
+  // 4. Filter games by status, search key, genre, and platform
+  let filtered = statusGames.filter(g => {
     const matchSearch = g.name.toLowerCase().includes(searchVal);
-    return matchStatus && matchSearch;
+    
+    const matchGenre = genreFilter === 'all' || (g.genres && g.genres.some(genre => {
+      const name = typeof genre === 'object' ? genre.name : genre;
+      return name === genreFilter;
+    }));
+
+    const matchPlatform = platformFilter === 'all' || g.platform === platformFilter;
+
+    return matchSearch && matchGenre && matchPlatform;
   });
+
+  // 5. Sort games based on sorting option
+  filtered.sort((a, b) => {
+    if (sortBy === 'name-asc') {
+      return a.name.localeCompare(b.name, 'vi', { sensitivity: 'base' });
+    }
+    if (sortBy === 'name-desc') {
+      return b.name.localeCompare(a.name, 'vi', { sensitivity: 'base' });
+    }
+    if (sortBy === 'metacritic-desc') {
+      return (b.metacritic || 0) - (a.metacritic || 0);
+    }
+    if (sortBy === 'released-desc') {
+      return (b.released || '').localeCompare(a.released || '');
+    }
+    if (sortBy === 'updated-desc') {
+      return (b.updatedAt || 0) - (a.updatedAt || 0);
+    }
+    if (sortBy === 'playtime-desc') {
+      return (parseFloat(b.playingHours) || 0) - (parseFloat(a.playingHours) || 0);
+    }
+    if (sortBy === 'playtime-asc') {
+      return (parseFloat(a.playingHours) || 0) - (parseFloat(b.playingHours) || 0);
+    }
+    if (sortBy === 'startdate-desc') {
+      return (b.startDate || '').localeCompare(a.startDate || '');
+    }
+    if (sortBy === 'priority-desc') {
+      const priorityWeight = { high: 3, medium: 2, low: 1 };
+      const weightA = priorityWeight[a.priority] || 2;
+      const weightB = priorityWeight[b.priority] || 2;
+      return weightB - weightA;
+    }
+    if (sortBy === 'rating-desc') {
+      return (b.rating || 0) - (a.rating || 0);
+    }
+    if (sortBy === 'enddate-desc') {
+      return (b.endDate || '').localeCompare(a.endDate || '');
+    }
+    return 0;
+  });
+
+  // Clear grid
+  grid.innerHTML = '';
 
   if (filtered.length === 0) {
     grid.innerHTML = `
       <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-muted); font-size: 14px;">
-        ${searchVal ? 'Không tìm thấy game nào khớp với từ khóa tìm kiếm.' : 'Không có game nào trong mục này.'}
+        ${searchVal || genreFilter !== 'all' || platformFilter !== 'all' ? 'Không tìm thấy game nào khớp với bộ lọc.' : 'Không có game nào trong mục này.'}
       </div>
     `;
     return;
@@ -49,7 +167,7 @@ export function renderListTab(status) {
   filtered.forEach(game => {
     const card = document.createElement('div');
     card.className = `game-card glass-card ${game.status}`;
-    card.addEventListener('click', () => window.openGameDetails(game.id));
+    card.setAttribute('data-game-id', game.id);
 
     // Custom badges content
     let userInfoContent = '';

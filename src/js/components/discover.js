@@ -525,7 +525,7 @@ export function renderDiscoverResults(results, targetGrid, append = false) {
   filteredResults.forEach(game => {
     const card = document.createElement('div');
     card.className = `game-card glass-card`;
-    card.addEventListener('click', () => window.openGameDetails(game.id));
+    card.setAttribute('data-game-id', game.id);
 
     const mcScore = game.metacritic;
     let mcClass = '';

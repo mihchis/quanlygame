@@ -85,7 +85,31 @@ async function initApp() {
   try {
     // 1. Load configuration
     const config = await loadConfig();
-    if (inputApiKey) inputApiKey.value = config.apiKey || '';
+    if (inputApiKey) {
+      if (config.isEnvLoaded) {
+        inputApiKey.value = '••••••••••••••••••••••••••••••••';
+        inputApiKey.disabled = true;
+        inputApiKey.style.opacity = '0.7';
+        inputApiKey.style.cursor = 'not-allowed';
+        if (btnToggleKey) btnToggleKey.style.display = 'none';
+        if (btnSaveKey) {
+          btnSaveKey.disabled = true;
+          btnSaveKey.style.opacity = '0.5';
+          btnSaveKey.style.cursor = 'not-allowed';
+          btnSaveKey.title = 'API Key được nạp từ biến môi trường (.env)';
+        }
+        const settingsDesc = document.querySelector('.settings-card-desc');
+        if (settingsDesc) {
+          settingsDesc.innerHTML = 'API Key đang được nạp tự động từ file cấu hình <code>.env</code>. Bạn không cần phải chỉnh sửa thủ công ở đây.';
+        }
+        if (keyTestFeedback) {
+          keyTestFeedback.innerHTML = '<span class="status-dot green" style="display:inline-block; vertical-align:middle; margin-right:6px;"></span> <strong style="color: var(--accent-green);">API Key được tự động tải từ file cấu hình .env (Đang hoạt động)</strong>';
+          keyTestFeedback.className = 'feedback-message success';
+        }
+      } else {
+        inputApiKey.value = config.apiKey || '';
+      }
+    }
     updateAPIKeyUIStatus();
 
     // 2. Load game database
@@ -221,10 +245,22 @@ function setupEventListeners() {
     });
   }
 
-  // Client-side search filters for lists
-  if (playingSearch) playingSearch.addEventListener('input', () => renderListTab('playing'));
-  if (backlogSearch) backlogSearch.addEventListener('input', () => renderListTab('backlog'));
-  if (completedSearch) completedSearch.addEventListener('input', () => renderListTab('completed'));
+  // Client-side search filters and sort for lists
+  const bindListFilters = (status) => {
+    const search = document.getElementById(`${status}-search-input`);
+    const genre = document.getElementById(`${status}-filter-genre`);
+    const platform = document.getElementById(`${status}-filter-platform`);
+    const sort = document.getElementById(`${status}-sort`);
+
+    if (search) search.addEventListener('input', () => renderListTab(status));
+    if (genre) genre.addEventListener('change', () => renderListTab(status));
+    if (platform) platform.addEventListener('change', () => renderListTab(status));
+    if (sort) sort.addEventListener('change', () => renderListTab(status));
+  };
+
+  bindListFilters('playing');
+  bindListFilters('backlog');
+  bindListFilters('completed');
 
   // RAWG Global Search triggers
   if (btnRawgSearch) {
@@ -252,6 +288,7 @@ function setupEventListeners() {
   // Save Settings
   if (btnSaveKey && inputApiKey && keyTestFeedback) {
     btnSaveKey.addEventListener('click', async () => {
+      if (state.appConfig.isEnvLoaded) return;
       const key = inputApiKey.value.trim();
       state.appConfig.apiKey = key;
       const success = await saveConfig(state.appConfig);
@@ -271,8 +308,9 @@ function setupEventListeners() {
   // Test API Key Connection
   if (btnTestKey && inputApiKey && keyTestFeedback) {
     btnTestKey.addEventListener('click', async () => {
-      const key = inputApiKey.value.trim();
-      if (!key) {
+      const isEnv = state.appConfig.isEnvLoaded;
+      const key = isEnv ? state.appConfig.apiKey : inputApiKey.value.trim();
+      if (!key || (key.startsWith('•••') && !isEnv)) {
         keyTestFeedback.textContent = 'Vui lòng điền API Key trước khi test!';
         keyTestFeedback.className = 'feedback-message error';
         return;
@@ -282,23 +320,36 @@ function setupEventListeners() {
       keyTestFeedback.className = 'feedback-message';
 
       // Temporarily save config to test it
-      const oldKey = state.appConfig.apiKey;
-      state.appConfig.apiKey = key;
-      await saveConfig(state.appConfig);
+      let oldKey;
+      if (!isEnv) {
+        oldKey = state.appConfig.apiKey;
+        state.appConfig.apiKey = key;
+        await saveConfig(state.appConfig);
+      }
 
       try {
         // Fetch a simple query to verify
         await window.api.getPopularGames(1);
-        keyTestFeedback.textContent = 'Kết nối thành công! API Key hợp lệ.';
+        if (isEnv) {
+          keyTestFeedback.innerHTML = '<span class="status-dot green" style="display:inline-block; vertical-align:middle; margin-right:6px;"></span> <strong style="color: var(--accent-green);">API Key được tự động tải từ file cấu hình .env (Kết nối thành công!)</strong>';
+        } else {
+          keyTestFeedback.textContent = 'Kết nối thành công! API Key hợp lệ.';
+        }
         keyTestFeedback.className = 'feedback-message success';
         updateAPIKeyUIStatus();
       } catch (err) {
-        keyTestFeedback.textContent = 'Kết nối thất bại. API Key không hợp lệ hoặc lỗi mạng!';
+        if (isEnv) {
+          keyTestFeedback.innerHTML = '<span class="status-dot red" style="display:inline-block; vertical-align:middle; margin-right:6px;"></span> <strong style="color: var(--accent-danger);">Kết nối thất bại. API Key trong .env không hợp lệ hoặc lỗi mạng!</strong>';
+        } else {
+          keyTestFeedback.textContent = 'Kết nối thất bại. API Key không hợp lệ hoặc lỗi mạng!';
+        }
         keyTestFeedback.className = 'feedback-message error';
-        // Reset key
-        state.appConfig.apiKey = oldKey;
-        await saveConfig(state.appConfig);
-        updateAPIKeyUIStatus();
+        if (!isEnv) {
+          // Reset key
+          state.appConfig.apiKey = oldKey;
+          await saveConfig(state.appConfig);
+          updateAPIKeyUIStatus();
+        }
       }
     });
   }
@@ -464,6 +515,17 @@ function setupEventListeners() {
     document.querySelectorAll('.tag-pill').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.creator-pill').forEach(p => p.classList.remove('active'));
   });
+
+  // Global Event Delegation for opening Game Details
+  document.addEventListener('click', (e) => {
+    const target = e.target.closest('.game-card, .completed-showcase-item, .rec-card, .similar-game-card, [data-game-id]');
+    if (target) {
+      const gameId = target.getAttribute('data-game-id');
+      if (gameId && gameId !== 'none') {
+        openGameDetails(Number(gameId));
+      }
+    }
+  });
 }
 
 // Switch tabs and trigger animations
@@ -532,7 +594,14 @@ export function renderActiveTabContents() {
       break;
     case 'settings':
       // API Key input is pre-populated in initApp
-      if (keyTestFeedback) keyTestFeedback.textContent = '';
+      if (keyTestFeedback) {
+        if (state.appConfig.isEnvLoaded) {
+          keyTestFeedback.innerHTML = '<span class="status-dot green" style="display:inline-block; vertical-align:middle; margin-right:6px;"></span> <strong style="color: var(--accent-green);">API Key được tự động tải từ file cấu hình .env (Đang hoạt động)</strong>';
+          keyTestFeedback.className = 'feedback-message success';
+        } else {
+          keyTestFeedback.textContent = '';
+        }
+      }
       break;
   }
 }

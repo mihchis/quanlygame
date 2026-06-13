@@ -211,17 +211,7 @@ export async function openGameDetails(gameId) {
       if (details.genres && details.genres.length > 0) {
         details.genres.forEach((genre, idx) => {
           const span = document.createElement('span');
-          span.style.cssText = 'color: var(--accent-purple); cursor: pointer; font-weight: 600; text-decoration: none; transition: color 0.2s ease;';
           span.textContent = genre.name;
-          
-          span.addEventListener('mouseenter', () => {
-            span.style.color = 'var(--text-white)';
-            span.style.textDecoration = 'underline';
-          });
-          span.addEventListener('mouseleave', () => {
-            span.style.color = 'var(--accent-purple)';
-            span.style.textDecoration = 'none';
-          });
           
           span.addEventListener('click', () => {
             if (gameDetailModal) gameDetailModal.classList.remove('active');
@@ -315,19 +305,7 @@ export async function openGameDetails(gameId) {
         details.tags.slice(0, 12).forEach(tag => {
           const span = document.createElement('span');
           span.className = 'tag-badge';
-          span.style.cssText = 'background-color: rgba(255,255,255,0.05); border: 1px solid var(--border-glass); color: var(--text-light); padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 500; cursor: pointer; transition: all 0.2s ease;';
           span.textContent = tag.name;
-          
-          span.addEventListener('mouseenter', () => {
-            span.style.backgroundColor = 'rgba(139, 92, 246, 0.15)';
-            span.style.borderColor = 'var(--accent-purple)';
-            span.style.color = 'var(--text-white)';
-          });
-          span.addEventListener('mouseleave', () => {
-            span.style.backgroundColor = 'rgba(255,255,255,0.05)';
-            span.style.borderColor = 'var(--border-glass)';
-            span.style.color = 'var(--text-light)';
-          });
           
           span.addEventListener('click', () => {
             if (gameDetailModal) gameDetailModal.classList.remove('active');
@@ -351,12 +329,8 @@ export async function openGameDetails(gameId) {
           filteredSim.slice(0, 8).forEach(sim => {
             const item = document.createElement('div');
             item.className = 'similar-game-card';
-            item.style.cssText = 'width: 100px; flex-shrink: 0; cursor: pointer; position: relative; transition: transform 0.2s ease;';
-            item.addEventListener('mouseenter', () => item.style.transform = 'translateY(-4px)');
-            item.addEventListener('mouseleave', () => item.style.transform = 'translateY(0)');
-            item.addEventListener('click', () => {
-              openGameDetails(sim.id);
-            });
+            item.style.cssText = 'width: 100px; flex-shrink: 0; cursor: pointer; position: relative;';
+            item.setAttribute('data-game-id', sim.id);
 
             item.innerHTML = `
               <div style="position: relative; width: 100px; height: 130px; border-radius: 6px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.3); border: 1px solid var(--border-glass);">
@@ -415,12 +389,8 @@ export async function openGameDetails(gameId) {
             addData.results.forEach(add => {
               const item = document.createElement('div');
               item.className = 'similar-game-card'; // Reuse identical styling
-              item.style.cssText = 'width: 100px; flex-shrink: 0; cursor: pointer; position: relative; transition: transform 0.2s ease;';
-              item.addEventListener('mouseenter', () => item.style.transform = 'translateY(-4px)');
-              item.addEventListener('mouseleave', () => item.style.transform = 'translateY(0)');
-              item.addEventListener('click', () => {
-                openGameDetails(add.id);
-              });
+              item.style.cssText = 'width: 100px; flex-shrink: 0; cursor: pointer; position: relative;';
+              item.setAttribute('data-game-id', add.id);
 
               item.innerHTML = `
                 <div style="position: relative; width: 100px; height: 130px; border-radius: 6px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.3); border: 1px solid var(--border-glass);">
@@ -450,15 +420,8 @@ export async function openGameDetails(gameId) {
             teamData.results.forEach(member => {
               const item = document.createElement('div');
               item.className = 'team-member-card';
-              item.style.cssText = 'width: 100px; flex-shrink: 0; text-align: center; position: relative; cursor: pointer; transition: transform 0.2s ease;';
+              item.style.cssText = 'width: 100px; flex-shrink: 0; text-align: center; position: relative; cursor: pointer;';
               
-              item.addEventListener('mouseenter', () => {
-                item.style.transform = 'scale(1.05)';
-              });
-              item.addEventListener('mouseleave', () => {
-                item.style.transform = 'scale(1)';
-              });
-
               item.addEventListener('click', () => {
                 if (gameDetailModal) gameDetailModal.classList.remove('active');
                 switchTab('discover');
@@ -496,12 +459,8 @@ export async function openGameDetails(gameId) {
             seriesData.results.forEach(ser => {
               const item = document.createElement('div');
               item.className = 'similar-game-card'; // Reuse identical styling
-              item.style.cssText = 'width: 100px; flex-shrink: 0; cursor: pointer; position: relative; transition: transform 0.2s ease;';
-              item.addEventListener('mouseenter', () => item.style.transform = 'translateY(-4px)');
-              item.addEventListener('mouseleave', () => item.style.transform = 'translateY(0)');
-              item.addEventListener('click', () => {
-                openGameDetails(ser.id);
-              });
+              item.style.cssText = 'width: 100px; flex-shrink: 0; cursor: pointer; position: relative;';
+              item.setAttribute('data-game-id', ser.id);
 
               item.innerHTML = `
                 <div style="position: relative; width: 100px; height: 130px; border-radius: 6px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.3); border: 1px solid var(--border-glass);">
@@ -531,12 +490,8 @@ export async function openGameDetails(gameId) {
             parentsData.results.forEach(parent => {
               const item = document.createElement('div');
               item.className = 'similar-game-card'; // Reuse identical styling
-              item.style.cssText = 'width: 100px; flex-shrink: 0; cursor: pointer; position: relative; transition: transform 0.2s ease;';
-              item.addEventListener('mouseenter', () => item.style.transform = 'translateY(-4px)');
-              item.addEventListener('mouseleave', () => item.style.transform = 'translateY(0)');
-              item.addEventListener('click', () => {
-                openGameDetails(parent.id);
-              });
+              item.style.cssText = 'width: 100px; flex-shrink: 0; cursor: pointer; position: relative;';
+              item.setAttribute('data-game-id', parent.id);
 
               item.innerHTML = `
                 <div style="position: relative; width: 100px; height: 130px; border-radius: 6px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.3); border: 1px solid var(--border-glass);">
@@ -714,16 +669,7 @@ export async function openGameDetails(gameId) {
             achData.results.forEach(ach => {
               const item = document.createElement('div');
               item.className = 'achievement-card';
-              item.style.cssText = 'width: 120px; flex-shrink: 0; text-align: center; position: relative; background: rgba(255,255,255,0.03); border: 1px solid var(--border-glass); border-radius: 8px; padding: 10px; display: flex; flex-direction: column; align-items: center; justify-content: space-between; transition: transform 0.2s ease, background-color 0.2s ease;';
-              
-              item.addEventListener('mouseenter', () => {
-                item.style.transform = 'translateY(-4px)';
-                item.style.backgroundColor = 'rgba(255,255,255,0.08)';
-              });
-              item.addEventListener('mouseleave', () => {
-                item.style.transform = 'translateY(0)';
-                item.style.backgroundColor = 'rgba(255,255,255,0.03)';
-              });
+              item.style.cssText = 'width: 120px; flex-shrink: 0; text-align: center; position: relative; background: rgba(255,255,255,0.03); border: 1px solid var(--border-glass); border-radius: 8px; padding: 10px; display: flex; flex-direction: column; align-items: center; justify-content: space-between;';
 
               const imgUrl = ach.image || 'src/css/placeholder.svg';
               const name = ach.name || 'Thành tựu';
@@ -763,16 +709,7 @@ export async function openGameDetails(gameId) {
             redditData.results.forEach(post => {
               const card = document.createElement('div');
               card.className = 'reddit-post-card';
-              card.style.cssText = 'background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-glass); border-radius: 8px; padding: 12px; display: flex; gap: 12px; align-items: flex-start; transition: background-color 0.2s, transform 0.2s; margin-bottom: 10px;';
-              
-              card.addEventListener('mouseenter', () => {
-                card.style.backgroundColor = 'rgba(255, 255, 255, 0.06)';
-                card.style.transform = 'translateY(-2px)';
-              });
-              card.addEventListener('mouseleave', () => {
-                card.style.backgroundColor = 'rgba(255, 255, 255, 0.03)';
-                card.style.transform = 'translateY(0)';
-              });
+              card.style.cssText = 'background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-glass); border-radius: 8px; padding: 12px; display: flex; gap: 12px; align-items: flex-start; margin-bottom: 10px;';
 
               let dateStr = '';
               if (post.created) {
@@ -846,10 +783,7 @@ export async function openGameDetails(gameId) {
               item.href = stream.url || `https://www.twitch.tv/${stream.user_name || stream.name}`;
               item.target = '_blank';
               item.className = 'twitch-stream-card';
-              item.style.cssText = 'width: 150px; flex-shrink: 0; text-decoration: none; display: flex; flex-direction: column; gap: 4px; transition: transform 0.2s; cursor: pointer;';
-              
-              item.addEventListener('mouseenter', () => item.style.transform = 'translateY(-4px)');
-              item.addEventListener('mouseleave', () => item.style.transform = 'translateY(0)');
+              item.style.cssText = 'width: 150px; flex-shrink: 0; text-decoration: none; display: flex; flex-direction: column; gap: 4px; cursor: pointer;';
 
               const viewText = stream.view_count !== undefined ? `👁️ ${stream.view_count.toLocaleString()}` : '';
 
@@ -886,10 +820,7 @@ export async function openGameDetails(gameId) {
               item.href = `https://www.youtube.com/watch?v=${video.external_id}`;
               item.target = '_blank';
               item.className = 'youtube-video-card';
-              item.style.cssText = 'width: 150px; flex-shrink: 0; text-decoration: none; display: flex; flex-direction: column; gap: 4px; transition: transform 0.2s; cursor: pointer;';
-              
-              item.addEventListener('mouseenter', () => item.style.transform = 'translateY(-4px)');
-              item.addEventListener('mouseleave', () => item.style.transform = 'translateY(0)');
+              item.style.cssText = 'width: 150px; flex-shrink: 0; text-decoration: none; display: flex; flex-direction: column; gap: 4px; cursor: pointer;';
 
               const thumbUrl = video.thumbnails && video.thumbnails.high ? video.thumbnails.high.url : 
                                (video.thumbnails && video.thumbnails.medium ? video.thumbnails.medium.url : 
@@ -1105,6 +1036,25 @@ export function closeModal() {
     modalTrailerVideo.pause();
     modalTrailerVideo.src = '';
   }
+
+  // Deep DOM cleanup of list containers to prevent memory leaks and release reference handlers instantly
+  if (modalScreenshotsContainer) modalScreenshotsContainer.innerHTML = '';
+  if (modalTagsContainer) modalTagsContainer.innerHTML = '';
+  if (modalSimilarContainer) modalSimilarContainer.innerHTML = '';
+  if (modalAdditionsContainer) modalAdditionsContainer.innerHTML = '';
+  if (modalTeamContainer) modalTeamContainer.innerHTML = '';
+  if (modalSeriesContainer) modalSeriesContainer.innerHTML = '';
+  if (modalParentsContainer) modalParentsContainer.innerHTML = '';
+  if (modalAchievementsContainer) modalAchievementsContainer.innerHTML = '';
+  if (modalRedditPostsContainer) modalRedditPostsContainer.innerHTML = '';
+  if (modalTwitchContainer) modalTwitchContainer.innerHTML = '';
+  if (modalYoutubeContainer) modalYoutubeContainer.innerHTML = '';
+
+  const modalStoresContainer = document.getElementById('modal-stores-container');
+  if (modalStoresContainer) modalStoresContainer.innerHTML = '';
+
+  const existingSwitcher = document.getElementById('modal-trailers-switcher-container');
+  if (existingSwitcher) existingSwitcher.remove();
 }
 
 // Save or Update Game state

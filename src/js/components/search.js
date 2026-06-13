@@ -133,7 +133,7 @@ export function renderRawgSearchResults(results, append = false) {
   filteredResults.forEach(game => {
     const card = document.createElement('div');
     card.className = `game-card glass-card`;
-    card.addEventListener('click', () => window.openGameDetails(game.id));
+    card.setAttribute('data-game-id', game.id);
 
     // Metacritic
     const mcScore = game.metacritic;

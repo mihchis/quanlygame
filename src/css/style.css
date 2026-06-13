@@ -1754,3 +1754,496 @@ body {
   color: var(--text-muted);
   font-weight: 400;
 }
+
+/* ── PREMIUM DASHBOARD UPGRADE ────────────────────────── */
+
+/* Cinematic Hero Banner */
+.dashboard-hero-banner {
+  position: relative;
+  height: 240px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  padding: 30px;
+  border: 1px solid var(--border-glass);
+}
+
+.hero-banner-image-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: blur(12px) brightness(0.35);
+  transform: scale(1.1);
+  z-index: 0;
+}
+
+.dashboard-hero-banner-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  width: 100%;
+}
+
+.hero-banner-cover-wrapper {
+  width: 120px;
+  height: 160px;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6);
+  flex-shrink: 0;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: transform 0.3s ease;
+}
+
+.hero-banner-cover-wrapper:hover {
+  transform: scale(1.05);
+}
+
+.hero-banner-cover {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.hero-banner-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex-grow: 1;
+}
+
+.hero-banner-status-badge {
+  background-color: var(--accent-purple-glow);
+  color: var(--accent-purple);
+  border: 1px solid var(--accent-purple);
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 20px;
+  width: fit-content;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  box-shadow: 0 0 10px rgba(139, 92, 246, 0.2);
+}
+
+.hero-banner-title {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--text-white);
+  letter-spacing: -0.5px;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.hero-banner-title:hover {
+  color: var(--accent-purple);
+}
+
+.hero-banner-playtime {
+  font-size: 14px;
+  color: var(--text-light);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.hero-banner-playtime svg {
+  color: var(--accent-purple);
+}
+
+.hero-banner-notes {
+  font-size: 13.5px;
+  color: var(--text-muted);
+  font-style: italic;
+  max-width: 750px;
+  line-height: 1.5;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 10px 14px;
+  border-radius: 8px;
+  border-left: 3px solid var(--accent-purple);
+  margin-top: 4px;
+}
+
+/* Playtime Leaderboard Progress bars */
+.playtime-leaderboard-item {
+  display: grid;
+  grid-template-columns: 36px 1fr 60px;
+  align-items: center;
+  gap: 12px;
+}
+
+.leaderboard-rank {
+  font-size: 16px;
+  font-weight: 800;
+  text-align: center;
+  color: var(--text-muted);
+}
+.playtime-leaderboard-item:nth-child(1) .leaderboard-rank { color: #facc15; font-size: 18px; text-shadow: 0 0 8px rgba(250, 204, 21, 0.3); }
+.playtime-leaderboard-item:nth-child(2) .leaderboard-rank { color: #94a3b8; font-size: 17px; }
+.playtime-leaderboard-item:nth-child(3) .leaderboard-rank { color: #b45309; }
+
+.leaderboard-bar-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.leaderboard-title {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-white);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+.leaderboard-title:hover {
+  color: var(--accent-purple);
+}
+
+.leaderboard-bar-bg {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.leaderboard-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent-indigo), var(--accent-purple));
+  border-radius: 4px;
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.leaderboard-hours {
+  font-size: 12px;
+  font-weight: 700;
+  text-align: right;
+  color: var(--text-light);
+}
+
+/* Genre breakdown CSS indicator */
+.genre-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.genre-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12.5px;
+}
+.genre-name {
+  color: var(--text-light);
+  font-weight: 500;
+}
+.genre-count {
+  color: var(--text-muted);
+  font-weight: 600;
+}
+.genre-bar-bg {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.genre-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.8s ease;
+}
+
+/* Recent Activity Log */
+.activity-log-item {
+  display: flex;
+  gap: 14px;
+  position: relative;
+  padding-bottom: 4px;
+}
+.activity-log-item:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  left: 20px;
+  top: 40px;
+  bottom: -10px;
+  width: 2px;
+  background: var(--border-glass);
+}
+
+.activity-icon-wrapper {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 1px solid var(--border-glass);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+.activity-icon-wrapper.playing { background-color: rgba(59, 130, 246, 0.15); color: var(--accent-blue); }
+.activity-icon-wrapper.backlog { background-color: rgba(249, 115, 22, 0.15); color: var(--accent-orange); }
+.activity-icon-wrapper.completed { background-color: rgba(16, 185, 129, 0.15); color: var(--accent-green); }
+.activity-icon-wrapper.create { background-color: rgba(139, 92, 246, 0.15); color: var(--accent-purple); }
+
+.activity-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-top: 2px;
+}
+.activity-title {
+  font-size: 13.5px;
+  color: var(--text-white);
+  font-weight: 500;
+  line-height: 1.4;
+}
+.activity-game-name {
+  font-weight: 700;
+  color: var(--text-white);
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+.activity-game-name:hover {
+  color: var(--accent-purple);
+}
+.activity-time {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* Specs Diagnostics Card style */
+.specs-widget-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-top: 8px;
+}
+.spec-widget-item {
+  background: rgba(0, 0, 0, 0.2);
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border-glass);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.spec-widget-label {
+  font-size: 10px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  font-weight: 600;
+}
+.spec-widget-val {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-light);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Hall of Fame Completed Showcase style */
+.completed-showcase-item {
+  width: 240px;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--border-glass);
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex-shrink: 0;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  cursor: pointer;
+}
+.completed-showcase-item:hover {
+  transform: translateY(-4px);
+  border-color: var(--accent-green);
+  box-shadow: 0 6px 18px rgba(16, 185, 129, 0.15);
+}
+.showcase-cover {
+  width: 100%;
+  height: 120px;
+  border-radius: 8px;
+  object-fit: cover;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+.showcase-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text-white);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.showcase-rating {
+  font-size: 11px;
+  color: #facc15;
+  letter-spacing: 1px;
+}
+.showcase-comment {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  font-style: italic;
+  line-height: 1.4;
+  height: 38px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  background: rgba(0,0,0,0.15);
+  padding: 4px 6px;
+  border-radius: 4px;
+}
+
+/* Recommendation card inside dashboard */
+.rec-card {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+  border: 1px solid var(--border-glass);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  height: 155px;
+}
+.rec-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--accent-purple);
+  box-shadow: 0 6px 14px rgba(139, 92, 246, 0.15);
+}
+.rec-cover {
+  height: 95px;
+  width: 100%;
+  object-fit: cover;
+}
+.rec-info {
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.rec-title {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text-white);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.rec-score {
+  font-size: 10.5px;
+  color: var(--text-muted);
+}
+
+/* ── SELECT FILTERS & SORT STYLING ────────────────────── */
+.filter-select-field, .sort-select-field {
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-glass);
+  color: var(--text-white);
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-size: 14px;
+  transition: border-color var(--transition-speed) ease;
+  outline: none;
+  cursor: pointer;
+  min-width: 160px;
+}
+
+.filter-select-field:focus, .sort-select-field:focus {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 10px rgba(139, 92, 246, 0.2);
+}
+
+.filter-select-field option, .sort-select-field option {
+  background-color: var(--bg-panel);
+  color: var(--text-white);
+}
+
+.list-actions-bar {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+/* ── CSS HOVER REPLACEMENTS (MEMORY OPTIMIZATION) ────── */
+.tag-badge {
+  background-color: rgba(255,255,255,0.05);
+  border: 1px solid var(--border-glass);
+  color: var(--text-light);
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.tag-badge:hover {
+  background-color: rgba(139, 92, 246, 0.15) !important;
+  border-color: var(--accent-purple) !important;
+  color: var(--text-white) !important;
+}
+
+/* Similar game card / expansion / dlc hover */
+.similar-game-card {
+  transition: transform 0.2s ease;
+}
+.similar-game-card:hover {
+  transform: translateY(-4px) !important;
+}
+
+/* Team member hover */
+.team-member-card {
+  transition: transform 0.2s ease;
+}
+.team-member-card:hover {
+  transform: scale(1.05) !important;
+}
+
+/* Achievement hover */
+.achievement-card {
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+.achievement-card:hover {
+  transform: translateY(-4px) !important;
+  background-color: rgba(255,255,255,0.08) !important;
+}
+
+/* Reddit post card hover */
+.reddit-post-card {
+  transition: background-color 0.2s, transform 0.2s;
+}
+.reddit-post-card:hover {
+  background-color: rgba(255, 255, 255, 0.06) !important;
+  transform: translateY(-2px) !important;
+}
+
+/* Modal genres span hover */
+#modal-genres span {
+  color: var(--accent-purple);
+  cursor: pointer;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+#modal-genres span:hover {
+  color: var(--text-white) !important;
+  text-decoration: underline !important;
+}
+
+/* Twitch and YouTube video cards hover */
+.twitch-stream-card, .youtube-video-card {
+  transition: transform 0.2s ease;
+}
+.twitch-stream-card:hover, .youtube-video-card:hover {
+  transform: translateY(-4px) !important;
+}
+

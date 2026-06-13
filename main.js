@@ -7,7 +7,76 @@ let mainWindow;
 // Paths for persistent data
 const USER_DATA_PATH = app.getPath('userData');
 const CONFIG_FILE = path.join(USER_DATA_PATH, 'config.json');
-const GAMES_FILE = path.join(USER_DATA_PATH, 'games.json');
+
+// Auto-detect OneDrive Documents path or fall back to system Documents
+function getDatabaseDir() {
+  // 1. Check if the default Documents folder is already in OneDrive
+  const defaultDocs = app.getPath('documents');
+  if (defaultDocs.toLowerCase().includes('onedrive')) {
+    const gameVaultPath = path.join(defaultDocs, 'GameVault');
+    if (!fs.existsSync(gameVaultPath)) {
+      try {
+        fs.mkdirSync(gameVaultPath, { recursive: true });
+      } catch (err) {
+        console.error('Error creating GameVault directory in OneDrive Documents:', err);
+      }
+    }
+    return gameVaultPath;
+  }
+
+  // 2. If not, check OneDrive environment variables
+  const oneDriveRoot = process.env.OneDrive || process.env.OneDriveConsumer || process.env.OneDriveCommercial;
+  if (oneDriveRoot && fs.existsSync(oneDriveRoot)) {
+    // Try 'Documents' first
+    let docsPath = path.join(oneDriveRoot, 'Documents');
+    if (!fs.existsSync(docsPath)) {
+      // Try 'Tài liệu'
+      const vnDocsPath = path.join(oneDriveRoot, 'Tài liệu');
+      if (fs.existsSync(vnDocsPath)) {
+        docsPath = vnDocsPath;
+      }
+    }
+
+    if (fs.existsSync(docsPath)) {
+      const gameVaultPath = path.join(docsPath, 'GameVault');
+      if (!fs.existsSync(gameVaultPath)) {
+        try {
+          fs.mkdirSync(gameVaultPath, { recursive: true });
+        } catch (err) {
+          console.error('Error creating GameVault directory in OneDrive subfolder:', err);
+          return path.join(defaultDocs, 'GameVault');
+        }
+      }
+      return gameVaultPath;
+    }
+
+    // Fallback: OneDrive root
+    const gameVaultPath = path.join(oneDriveRoot, 'GameVault');
+    if (!fs.existsSync(gameVaultPath)) {
+      try {
+        fs.mkdirSync(gameVaultPath, { recursive: true });
+      } catch (err) {
+        console.error('Error creating GameVault directory in OneDrive root:', err);
+      }
+    }
+    return gameVaultPath;
+  }
+
+  // 3. Fallback to default local Documents folder
+  const gameVaultPath = path.join(defaultDocs, 'GameVault');
+  if (!fs.existsSync(gameVaultPath)) {
+    try {
+      fs.mkdirSync(gameVaultPath, { recursive: true });
+    } catch (err) {
+      console.error('Error creating GameVault directory in local Documents:', err);
+      return USER_DATA_PATH;
+    }
+  }
+  return gameVaultPath;
+}
+
+const DB_DIR = getDatabaseDir();
+const GAMES_FILE = path.join(DB_DIR, 'games.json');
 
 // Load environment variables from .env if it exists
 function loadEnv() {
@@ -147,6 +216,19 @@ function initStorage() {
     fs.writeFileSync(CONFIG_FILE, JSON.stringify({ apiKey: defaultKey }, null, 2), 'utf-8');
   }
 
+  // Migrate existing games.json from userData to OneDrive/Documents if needed
+  const localGamesFile = path.join(USER_DATA_PATH, 'games.json');
+  if (DB_DIR !== USER_DATA_PATH) {
+    if (!fs.existsSync(GAMES_FILE) && fs.existsSync(localGamesFile)) {
+      try {
+        fs.copyFileSync(localGamesFile, GAMES_FILE);
+        console.log('Successfully migrated games.json to OneDrive/Documents at:', GAMES_FILE);
+      } catch (err) {
+        console.error('Error migrating games.json to OneDrive/Documents:', err);
+      }
+    }
+  }
+
   if (!fs.existsSync(GAMES_FILE) || fs.readFileSync(GAMES_FILE, 'utf-8').trim() === '[]') {
     // Populate with playing.csv games if available
     const csvGames = importCSVGames();
@@ -228,7 +310,11 @@ function createWindow() {
 
 // IPC Handlers
 ipcMain.handle('get-config', () => {
-  return readConfig();
+  const config = readConfig();
+  return {
+    ...config,
+    isEnvLoaded: !!process.env.RAWG_API_KEY
+  };
 });
 
 ipcMain.handle('save-config', (event, config) => {
