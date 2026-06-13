@@ -2,6 +2,9 @@
 
 import { state } from '../state.js';
 
+let currentSpecType = 'minimum';
+
+
 const modalDxdiagContainer = document.getElementById('modal-dxdiag-container');
 const dxdiagComparisonRows = document.getElementById('dxdiag-comparison-rows');
 const dxdiagVerdictText = document.getElementById('dxdiag-verdict-text');
@@ -172,7 +175,7 @@ export function compareSpecs(userSpecs, reqs) {
 }
 
 // Render the hardware match table inside the details modal
-export function renderSpecsComparison(gameDetails) {
+export function renderSpecsComparison(gameDetails, forceType = null) {
   // Reset UI
   modalDxdiagContainer.classList.add('hidden');
   dxdiagComparisonRows.innerHTML = '';
@@ -186,9 +189,39 @@ export function renderSpecsComparison(gameDetails) {
   if (!pcPlat || (!pcPlat.requirements_en && !pcPlat.requirements)) return;
 
   const reqObj = pcPlat.requirements_en || pcPlat.requirements;
-  if (!reqObj.minimum) return; // No minimum specs details
+  
+  const hasMin = !!reqObj.minimum;
+  const hasRec = !!reqObj.recommended;
+  
+  if (!hasMin && !hasRec) return;
 
-  const parsedReqs = parseRequirementsString(reqObj.minimum);
+  // Set the default or active type
+  if (forceType) {
+    currentSpecType = forceType;
+  } else {
+    // Default to minimum if available, else recommended
+    currentSpecType = hasMin ? 'minimum' : 'recommended';
+  }
+
+  // Setup toggle buttons visibility and active states
+  const toggleContainer = document.getElementById('specs-toggle-container');
+  const btnMin = document.getElementById('btn-specs-min');
+  const btnRec = document.getElementById('btn-specs-rec');
+
+  if (toggleContainer && btnMin && btnRec) {
+    if (hasMin && hasRec) {
+      toggleContainer.style.display = 'flex';
+      btnMin.classList.toggle('active', currentSpecType === 'minimum');
+      btnRec.classList.toggle('active', currentSpecType === 'recommended');
+    } else {
+      toggleContainer.style.display = 'none';
+    }
+  }
+
+  const reqStr = currentSpecType === 'minimum' ? reqObj.minimum : reqObj.recommended;
+  if (!reqStr) return;
+
+  const parsedReqs = parseRequirementsString(reqStr);
   if (!parsedReqs) return;
 
   const comparison = compareSpecs(state.appConfig.systemSpecs, parsedReqs);
@@ -237,15 +270,21 @@ export function renderSpecsComparison(gameDetails) {
   });
 
   // Calculate verdict
+  const typeLabel = currentSpecType === 'minimum' ? 'tối thiểu' : 'khuyến nghị';
+  
   if (hasFail) {
     dxdiagVerdictText.className = 'dxdiag-verdict fail';
-    dxdiagVerdictText.innerHTML = '⚠️ <strong>Cảnh báo:</strong> Cấu hình máy của bạn có thể KHÔNG ĐÁP ỨNG ĐỦ yêu cầu tối thiểu của game này. Game có thể chạy giật lag hoặc không mở được.';
+    if (currentSpecType === 'minimum') {
+      dxdiagVerdictText.innerHTML = '⚠️ <strong>Cảnh báo:</strong> Cấu hình máy của bạn có thể KHÔNG ĐÁP ỨNG ĐỦ yêu cầu tối thiểu của game này. Game có thể chạy giật lag hoặc không mở được.';
+    } else {
+      dxdiagVerdictText.innerHTML = '⚡ <strong>Lưu ý:</strong> Cấu hình máy của bạn chưa đạt yêu cầu khuyến nghị. Bạn vẫn có thể chơi được game nhưng có thể cần giảm bớt thiết lập đồ họa.';
+    }
   } else if (hasWarning) {
     dxdiagVerdictText.className = 'dxdiag-verdict warning';
-    dxdiagVerdictText.innerHTML = '⚡ <strong>Lưu ý:</strong> Một số phần cứng chưa thể đối chiếu tự động. Hãy so sánh vi xử lý/card đồ họa của bạn với yêu cầu của game để tự đánh giá.';
+    dxdiagVerdictText.innerHTML = `⚡ <strong>Lưu ý:</strong> Một số phần cứng chưa thể đối chiếu tự động. Hãy so sánh vi xử lý/card đồ họa của bạn với yêu cầu ${typeLabel} của game để tự đánh giá.`;
   } else {
     dxdiagVerdictText.className = 'dxdiag-verdict pass';
-    dxdiagVerdictText.innerHTML = '✅ <strong>Tuyệt vời:</strong> Cấu hình máy của bạn ĐẠT YÊU CẦU tối thiểu để chơi game này mượt mà!';
+    dxdiagVerdictText.innerHTML = `✅ <strong>Tuyệt vời:</strong> Cấu hình máy của bạn ĐẠT YÊU CẦU ${typeLabel} để chơi game này mượt mà!`;
   }
 }
 
@@ -258,4 +297,32 @@ export function updateSpecsPreviewUI(specs) {
   specPreviewCpu.textContent = specs.cpu || 'Không rõ';
   specPreviewRam.textContent = specs.ram || 'Không rõ';
   specPreviewGpu.textContent = specs.gpu || 'Không rõ';
+}
+
+// Bind event listeners for the toggle buttons
+function initToggleListeners() {
+  const btnMin = document.getElementById('btn-specs-min');
+  const btnRec = document.getElementById('btn-specs-rec');
+
+  if (btnMin) {
+    btnMin.addEventListener('click', () => {
+      if (state.selectedGame) {
+        renderSpecsComparison(state.selectedGame, 'minimum');
+      }
+    });
+  }
+
+  if (btnRec) {
+    btnRec.addEventListener('click', () => {
+      if (state.selectedGame) {
+        renderSpecsComparison(state.selectedGame, 'recommended');
+      }
+    });
+  }
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initToggleListeners);
+} else {
+  initToggleListeners();
 }

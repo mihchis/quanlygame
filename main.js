@@ -237,19 +237,22 @@ function initStorage() {
 }
 
 function readConfig() {
+  let config = { apiKey: '' };
   try {
-    const data = fs.readFileSync(CONFIG_FILE, 'utf-8');
-    const config = JSON.parse(data);
-    // Sync with environment variable if config is empty
-    if ((!config.apiKey || config.apiKey.trim() === '') && process.env.RAWG_API_KEY) {
-      config.apiKey = process.env.RAWG_API_KEY;
-      writeConfig(config);
+    if (fs.existsSync(CONFIG_FILE)) {
+      const data = fs.readFileSync(CONFIG_FILE, 'utf-8');
+      config = JSON.parse(data);
     }
-    return config;
   } catch (err) {
     console.error('Error reading config file:', err);
-    return { apiKey: process.env.RAWG_API_KEY || '' };
   }
+
+  // Always override with .env key if present
+  if (process.env.RAWG_API_KEY && process.env.RAWG_API_KEY.trim() !== '') {
+    config.apiKey = process.env.RAWG_API_KEY.trim();
+  }
+
+  return config;
 }
 
 function writeConfig(config) {
@@ -345,6 +348,13 @@ ipcMain.handle('fetch-rawg', async (event, endpoint, params = {}) => {
     const response = await fetch(url.toString());
     if (!response.ok) {
       if (response.status === 401) {
+        // Free-tier RAWG API keys do not have access to suggested, twitch, youtube, or movies endpoints.
+        // Return empty results gracefully instead of throwing API_KEY_INVALID to avoid breaking the UI.
+        const restrictedSuffixes = ['/suggested', '/twitch', '/youtube', '/movies'];
+        if (restrictedSuffixes.some(suffix => endpoint.endsWith(suffix))) {
+          console.warn(`RAWG endpoint '${endpoint}' is restricted on free-tier keys. Returning empty results.`);
+          return { results: [], count: 0 };
+        }
         throw new Error('API_KEY_INVALID');
       }
       throw new Error(`HTTP error! status: ${response.status}`);

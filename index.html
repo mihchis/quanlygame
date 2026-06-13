@@ -92,6 +92,61 @@
         <!-- 0. DISCOVER VIEW -->
         <section class="view-pane" id="view-discover">
 
+          <!-- Trending Games Section -->
+          <div class="discover-section" style="margin-bottom: 40px;">
+            <h2 class="search-section-header" style="margin-bottom: 20px;">🔥 Mọi người đang chơi (Trending)</h2>
+            <div id="discover-trending-loading" class="loading-spinner-wrapper">
+              <div class="spinner"></div>
+              <p>Đang tải danh sách game đang hot...</p>
+            </div>
+            <div class="game-grid" id="discover-trending-grid">
+              <!-- Dynamic Trending Games -->
+            </div>
+            <div class="load-more-container" id="trending-load-more-container" style="text-align: center; margin-top: 20px;">
+              <button class="btn btn-secondary" id="btn-trending-load-more">Xem thêm</button>
+            </div>
+          </div>
+
+          <!-- Upcoming Games Section -->
+          <div class="discover-section" style="margin-bottom: 40px;">
+            <h2 class="search-section-header" style="margin-bottom: 20px;">📅 Siêu phẩm sắp ra mắt (Upcoming)</h2>
+            <div id="discover-upcoming-loading" class="loading-spinner-wrapper">
+              <div class="spinner"></div>
+              <p>Đang tải danh sách game sắp phát hành...</p>
+            </div>
+            <div class="game-grid" id="discover-upcoming-grid">
+              <!-- Dynamic Upcoming Games -->
+            </div>
+            <div class="load-more-container" id="upcoming-load-more-container" style="text-align: center; margin-top: 20px;">
+              <button class="btn btn-secondary" id="btn-upcoming-load-more">Xem thêm</button>
+            </div>
+          </div>
+
+          <!-- Browse Results Section (shown after clicking genre/tag) -->
+          <div id="browse-results-section" style="margin-bottom: 40px; display: none;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
+              <h2 class="search-section-header" id="browse-results-title">Kết quả duyệt</h2>
+              <button id="btn-browse-back" class="btn btn-secondary" style="font-size: 12px; padding: 6px 14px;">
+                ← Quay lại
+              </button>
+            </div>
+            
+            <!-- Description of the browsed genre/tag -->
+            <div id="browse-results-desc" class="glass-card scrollbar-custom" style="padding: 20px; margin-bottom: 24px; font-size: 13.5px; line-height: 1.6; color: var(--text-light); display: none; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-glass); border-radius: 12px; max-height: 160px; overflow-y: auto;">
+              <!-- Loaded dynamically -->
+            </div>
+
+            <div id="browse-results-loading" class="loading-spinner-wrapper" style="display: none;">
+              <div class="spinner"></div>
+            </div>
+            <div class="game-grid" id="browse-results-grid">
+              <!-- Dynamic Browse Results -->
+            </div>
+            <div class="load-more-container" id="browse-load-more-container" style="text-align: center; margin-top: 20px; display: none;">
+              <button class="btn btn-secondary" id="btn-browse-load-more">Xem thêm</button>
+            </div>
+          </div>
+
           <!-- Genre Browser Section -->
           <div class="discover-section" style="margin-bottom: 40px;">
             <h2 class="search-section-header" style="margin-bottom: 14px;">🎮 Duyệt theo Thể loại (Genres)</h2>
@@ -126,69 +181,13 @@
           </div>
 
           <!-- Popular Tags Section -->
-          <div class="discover-section" style="margin-bottom: 40px;">
+          <div class="discover-section">
             <h2 class="search-section-header" style="margin-bottom: 14px;">🏷️ Tags Phổ biến</h2>
             <div id="tags-loading" class="loading-spinner-wrapper" style="height: 60px;">
               <div class="spinner"></div>
             </div>
             <div id="tags-cloud" style="display: none; display: flex; flex-wrap: wrap; gap: 8px;">
               <!-- Dynamic Tag Pills -->
-            </div>
-          </div>
-
-          <!-- Browse Results Section (shown after clicking genre/tag) -->
-          <div id="browse-results-section" style="margin-bottom: 40px; display: none;">
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
-              <h2 class="search-section-header" id="browse-results-title">Kết quả duyệt</h2>
-              <button id="btn-browse-back" class="btn btn-secondary" style="font-size: 12px; padding: 6px 14px;">
-                ← Quay lại
-              </button>
-            </div>
-            
-            <!-- Description of the browsed genre/tag -->
-            <div id="browse-results-desc" class="glass-card scrollbar-custom" style="padding: 20px; margin-bottom: 24px; font-size: 13.5px; line-height: 1.6; color: var(--text-light); display: none; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-glass); border-radius: 12px; max-height: 160px; overflow-y: auto;">
-              <!-- Loaded dynamically -->
-            </div>
-
-            <div id="browse-results-loading" class="loading-spinner-wrapper" style="display: none;">
-              <div class="spinner"></div>
-            </div>
-            <div class="game-grid" id="browse-results-grid">
-              <!-- Dynamic Browse Results -->
-            </div>
-            <div class="load-more-container" id="browse-load-more-container" style="text-align: center; margin-top: 20px; display: none;">
-              <button class="btn btn-secondary" id="btn-browse-load-more">Xem thêm</button>
-            </div>
-          </div>
-
-          <!-- Trending Games Section -->
-          <div class="discover-section" style="margin-bottom: 40px;">
-            <h2 class="search-section-header" style="margin-bottom: 20px;">🔥 Mọi người đang chơi (Trending)</h2>
-            <div id="discover-trending-loading" class="loading-spinner-wrapper">
-              <div class="spinner"></div>
-              <p>Đang tải danh sách game đang hot...</p>
-            </div>
-            <div class="game-grid" id="discover-trending-grid">
-              <!-- Dynamic Trending Games -->
-            </div>
-            <div class="load-more-container" id="trending-load-more-container" style="text-align: center; margin-top: 20px;">
-              <button class="btn btn-secondary" id="btn-trending-load-more">Xem thêm</button>
-            </div>
-          </div>
-
-
-          <!-- Upcoming Games Section -->
-          <div class="discover-section">
-            <h2 class="search-section-header" style="margin-bottom: 20px;">📅 Siêu phẩm sắp ra mắt (Upcoming)</h2>
-            <div id="discover-upcoming-loading" class="loading-spinner-wrapper">
-              <div class="spinner"></div>
-              <p>Đang tải danh sách game sắp phát hành...</p>
-            </div>
-            <div class="game-grid" id="discover-upcoming-grid">
-              <!-- Dynamic Upcoming Games -->
-            </div>
-            <div class="load-more-container" id="upcoming-load-more-container" style="text-align: center; margin-top: 20px;">
-              <button class="btn btn-secondary" id="btn-upcoming-load-more">Xem thêm</button>
             </div>
           </div>
         </section>
@@ -585,6 +584,99 @@
         <div class="modal-right-pane">
           <h2 class="modal-game-title" id="modal-title">Tên Game</h2>
           <p class="modal-game-meta-row" id="modal-release-dev">Ngày phát hành: -- | Phát triển: --</p>
+
+          <div class="status-config-box">
+            <h3 class="section-title">📂 Trạng thái của bạn</h3>
+            
+            <div class="form-row">
+              <div class="form-group flex-1">
+                <label for="select-game-status">Trạng thái</label>
+                <select id="select-game-status">
+                  <option value="none">Chưa lưu vào danh sách</option>
+                  <option value="playing">🎮 Đang chơi</option>
+                  <option value="backlog">📋 Muốn chơi (Backlog)</option>
+                  <option value="completed">🏆 Đã chơi xong</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row hidden" id="row-substatus-platform">
+              <div class="form-group flex-1">
+                <label for="select-game-substatus">Phân loại chi tiết</label>
+                <select id="select-game-substatus">
+                  <option value="none">Không có phân loại</option>
+                </select>
+              </div>
+              <div class="form-group flex-1">
+                <label for="select-game-platform">Hệ máy chơi</label>
+                <select id="select-game-platform">
+                  <option value="none">Chưa chọn hệ máy</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Dynamic Settings Fields based on Status Selection -->
+            <!-- 1. Playing Fields -->
+            <div class="status-fields hidden" id="fields-playing">
+              <div class="form-row">
+                <div class="form-group flex-1">
+                  <label for="input-playing-hours">Số giờ chơi đã tích lũy</label>
+                  <input type="number" id="input-playing-hours" min="0" step="0.1" value="0">
+                </div>
+                <div class="form-group flex-1">
+                  <label for="input-playing-start">Ngày bắt đầu chơi</label>
+                  <input type="date" id="input-playing-start">
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="input-playing-notes">Ghi chú hành trình chơi</label>
+                <textarea id="input-playing-notes" placeholder="Mục tiêu tiếp theo, cảm xúc hiện tại..." rows="3"></textarea>
+              </div>
+            </div>
+
+            <!-- 2. Backlog Fields -->
+            <div class="status-fields hidden" id="fields-backlog">
+              <div class="form-row">
+                <div class="form-group flex-1">
+                  <label for="select-backlog-priority">Mức độ ưu tiên chơi</label>
+                  <select id="select-backlog-priority">
+                    <option value="high">🔥 Rất cao (Chơi ngay)</option>
+                    <option value="medium" selected>⚡ Trung bình (Chờ lượt)</option>
+                    <option value="low">💤 Thấp (Rảnh thì chơi)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- 3. Completed Fields -->
+            <div class="status-fields hidden" id="fields-completed">
+              <div class="form-row">
+                <div class="form-group flex-1">
+                  <label>Đánh giá cá nhân</label>
+                  <div class="star-rating-selector" id="completed-rating-stars">
+                    <span class="star-btn" data-value="1">★</span>
+                    <span class="star-btn" data-value="2">★</span>
+                    <span class="star-btn" data-value="3">★</span>
+                    <span class="star-btn" data-value="4">★</span>
+                    <span class="star-btn" data-value="5">★</span>
+                  </div>
+                </div>
+                <div class="form-group flex-1">
+                  <label for="input-completed-date">Ngày hoàn thành</label>
+                  <input type="date" id="input-completed-date">
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="input-completed-review">Đánh giá / Cảm nhận về game</label>
+                <textarea id="input-completed-review" placeholder="Game có gì hay? Có đáng chơi lại không?..." rows="3"></textarea>
+              </div>
+            </div>
+
+            <div class="modal-action-buttons">
+              <button class="btn btn-primary" id="btn-save-modal">Lưu thay đổi</button>
+              <button class="btn btn-danger hidden" id="btn-delete-modal">Xóa khỏi thư viện</button>
+            </div>
+          </div>
           
           <div class="modal-game-description scrollbar-custom" id="modal-description">
             Đang tải mô tả game...
@@ -701,7 +793,13 @@
 
           <!-- DxDiag specs matching panel -->
           <div class="dxdiag-check-section hidden" id="modal-dxdiag-container">
-            <h3 class="section-title">💻 Đối chiếu cấu hình chơi Game (trên PC)</h3>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+              <h3 class="section-title" style="margin-bottom: 0;">💻 Đối chiếu cấu hình chơi Game (trên PC)</h3>
+              <div class="specs-toggle-container" id="specs-toggle-container" style="display: none;">
+                <button class="specs-toggle-btn active" id="btn-specs-min" data-type="minimum">Tối thiểu</button>
+                <button class="specs-toggle-btn" id="btn-specs-rec" data-type="recommended">Khuyến nghị</button>
+              </div>
+            </div>
             <div class="dxdiag-result-table-wrapper">
               <table class="dxdiag-table">
                 <thead>
@@ -719,99 +817,6 @@
             </div>
             <div class="dxdiag-verdict" id="dxdiag-verdict-text">
               <!-- Dynamic overall status text -->
-            </div>
-          </div>
-
-          <div class="status-config-box">
-            <h3 class="section-title">📂 Trạng thái của bạn</h3>
-            
-            <div class="form-row">
-              <div class="form-group flex-1">
-                <label for="select-game-status">Trạng thái</label>
-                <select id="select-game-status">
-                  <option value="none">Chưa lưu vào danh sách</option>
-                  <option value="playing">🎮 Đang chơi</option>
-                  <option value="backlog">📋 Muốn chơi (Backlog)</option>
-                  <option value="completed">🏆 Đã chơi xong</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="form-row hidden" id="row-substatus-platform">
-              <div class="form-group flex-1">
-                <label for="select-game-substatus">Phân loại chi tiết</label>
-                <select id="select-game-substatus">
-                  <option value="none">Không có phân loại</option>
-                </select>
-              </div>
-              <div class="form-group flex-1">
-                <label for="select-game-platform">Hệ máy chơi</label>
-                <select id="select-game-platform">
-                  <option value="none">Chưa chọn hệ máy</option>
-                </select>
-              </div>
-            </div>
-
-            <!-- Dynamic Settings Fields based on Status Selection -->
-            <!-- 1. Playing Fields -->
-            <div class="status-fields hidden" id="fields-playing">
-              <div class="form-row">
-                <div class="form-group flex-1">
-                  <label for="input-playing-hours">Số giờ chơi đã tích lũy</label>
-                  <input type="number" id="input-playing-hours" min="0" step="0.1" value="0">
-                </div>
-                <div class="form-group flex-1">
-                  <label for="input-playing-start">Ngày bắt đầu chơi</label>
-                  <input type="date" id="input-playing-start">
-                </div>
-              </div>
-              <div class="form-group">
-                <label for="input-playing-notes">Ghi chú hành trình chơi</label>
-                <textarea id="input-playing-notes" placeholder="Mục tiêu tiếp theo, cảm xúc hiện tại..." rows="3"></textarea>
-              </div>
-            </div>
-
-            <!-- 2. Backlog Fields -->
-            <div class="status-fields hidden" id="fields-backlog">
-              <div class="form-row">
-                <div class="form-group flex-1">
-                  <label for="select-backlog-priority">Mức độ ưu tiên chơi</label>
-                  <select id="select-backlog-priority">
-                    <option value="high">🔥 Rất cao (Chơi ngay)</option>
-                    <option value="medium" selected>⚡ Trung bình (Chờ lượt)</option>
-                    <option value="low">💤 Thấp (Rảnh thì chơi)</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-
-            <!-- 3. Completed Fields -->
-            <div class="status-fields hidden" id="fields-completed">
-              <div class="form-row">
-                <div class="form-group flex-1">
-                  <label>Đánh giá cá nhân</label>
-                  <div class="star-rating-selector" id="completed-rating-stars">
-                    <span class="star-btn" data-value="1">★</span>
-                    <span class="star-btn" data-value="2">★</span>
-                    <span class="star-btn" data-value="3">★</span>
-                    <span class="star-btn" data-value="4">★</span>
-                    <span class="star-btn" data-value="5">★</span>
-                  </div>
-                </div>
-                <div class="form-group flex-1">
-                  <label for="input-completed-date">Ngày hoàn thành</label>
-                  <input type="date" id="input-completed-date">
-                </div>
-              </div>
-              <div class="form-group">
-                <label for="input-completed-review">Đánh giá / Cảm nhận về game</label>
-                <textarea id="input-completed-review" placeholder="Game có gì hay? Có đáng chơi lại không?..." rows="3"></textarea>
-              </div>
-            </div>
-
-            <div class="modal-action-buttons">
-              <button class="btn btn-primary" id="btn-save-modal">Lưu thay đổi</button>
-              <button class="btn btn-danger hidden" id="btn-delete-modal">Xóa khỏi thư viện</button>
             </div>
           </div>
         </div>

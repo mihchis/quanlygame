@@ -8,6 +8,7 @@
 }
 
 :root {
+  color-scheme: dark;
   /* Color Design Tokens (HSL) */
   --bg-dark: hsl(222, 47%, 7%);
   --bg-panel: hsl(222, 47%, 11%);
@@ -1303,7 +1304,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  margin-top: auto;
+  margin-bottom: 24px;
 }
 
 .form-row {
@@ -1547,6 +1548,40 @@ body {
 .dxdiag-verdict.warning {
   border-left: 4px solid var(--accent-orange);
   color: var(--text-white);
+}
+
+.specs-toggle-container {
+  display: flex;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--border-glass);
+  border-radius: 8px;
+  padding: 2px;
+  gap: 2px;
+}
+
+.specs-toggle-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all var(--transition-speed) ease;
+  outline: none;
+}
+
+.specs-toggle-btn.active {
+  background: rgba(139, 92, 246, 0.2);
+  color: var(--text-white);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+}
+
+.specs-toggle-btn:hover:not(.active) {
+  color: var(--text-light);
+  background: rgba(255, 255, 255, 0.03);
 }
 
 /* Similar Game, Additions, Team, Series & Parent Cards & Scrollbar */
@@ -2246,4 +2281,283 @@ body {
 .twitch-stream-card:hover, .youtube-video-card:hover {
   transform: translateY(-4px) !important;
 }
+
+
+/* ==========================================
+   MONOCHROME (BLACK & WHITE) & NO-HOVER OVERRIDES
+   ========================================== */
+
+/* Redefine root variables to use pure black, white and grays */
+:root {
+  color-scheme: dark !important;
+  --bg-dark: hsl(0, 0%, 5%) !important;             /* Pure Black background */
+  --bg-panel: hsl(0, 0%, 8%) !important;            /* Very dark gray */
+  --bg-card: rgba(255, 255, 255, 0.03) !important;   /* Charcoal glass */
+  --bg-card-hover: rgba(255, 255, 255, 0.06) !important;
+  --bg-input: rgba(255, 255, 255, 0.02) !important;
+  
+  --accent-purple: hsl(0, 0%, 100%) !important;      /* White instead of Purple */
+  --accent-purple-glow: rgba(255, 255, 255, 0.1) !important;
+  --accent-indigo: hsl(0, 0%, 90%) !important;       /* Light gray instead of Indigo */
+  --accent-green: hsl(0, 0%, 95%) !important;
+  --accent-orange: hsl(0, 0%, 85%) !important;
+  --accent-blue: hsl(0, 0%, 90%) !important;
+  --accent-danger: hsl(0, 0%, 75%) !important;
+  
+  --text-white: hsl(0, 0%, 100%) !important;        /* Pure White */
+  --text-light: hsl(0, 0%, 88%) !important;         /* Light Gray */
+  --text-muted: hsl(0, 0%, 55%) !important;         /* Dark Gray */
+  
+  --border-glass: rgba(255, 255, 255, 0.08) !important;
+  --border-focus: hsl(0, 0%, 90%) !important;
+}
+
+/* Remove colored glows and shadow effects */
+.menu-item.active {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+  box-shadow: none !important;
+}
+.menu-item.active::before {
+  background-color: var(--text-white) !important;
+}
+.menu-item:hover {
+  transform: none !important;
+}
+.sidebar.collapsed .menu-item:hover {
+  transform: none !important;
+}
+
+/* Redefine Primary Button to be pure Black & White */
+.btn-primary {
+  background: var(--text-white) !important;
+  color: var(--bg-dark) !important;
+  box-shadow: none !important;
+  border: 1px solid var(--text-white) !important;
+}
+.btn-primary:hover {
+  background: var(--text-light) !important;
+  color: var(--bg-dark) !important;
+  box-shadow: none !important;
+  border-color: var(--text-light) !important;
+}
+
+/* Redefine Secondary Button to be clean outline/monochrome */
+.btn-secondary {
+  background-color: transparent !important;
+  border: 1px solid var(--border-glass) !important;
+  color: var(--text-light) !important;
+}
+.btn-secondary:hover {
+  background-color: rgba(255, 255, 255, 0.06) !important;
+  border-color: var(--text-white) !important;
+  color: var(--text-white) !important;
+}
+
+/* Store link buttons style overrides */
+.store-link-btn:hover {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+  border-color: var(--text-white) !important;
+  color: var(--text-white) !important;
+  transform: none !important;
+}
+
+/* Specs toggle button overrides */
+.specs-toggle-btn.active {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: var(--text-white) !important;
+  border: 1px solid var(--text-white) !important;
+  box-shadow: none !important;
+}
+
+/* Remove hover animations / transitions scale & translateY */
+.game-card {
+  transition: box-shadow var(--transition-speed) ease !important;
+}
+.game-card:hover {
+  transform: none !important; /* Limit movement on hover */
+  box-shadow: none !important;
+  border: 1px solid var(--text-white) !important;
+}
+.game-card.playing:hover,
+.game-card.backlog:hover,
+.game-card.completed:hover {
+  box-shadow: none !important;
+}
+.game-card:hover .game-card-img {
+  transform: none !important; /* Disable image zoom */
+}
+
+.similar-game-card:hover img {
+  transform: none !important;
+}
+.similar-game-card:hover {
+  transform: none !important;
+}
+
+.genre-card {
+  transition: border-color var(--transition-speed) ease !important;
+}
+.genre-card:hover {
+  transform: none !important;
+  box-shadow: none !important;
+  border-color: var(--text-white) !important;
+}
+.genre-card:hover .genre-card-bg {
+  transform: none !important;
+}
+
+.hero-banner-cover-wrapper:hover {
+  transform: none !important;
+}
+
+.team-member-card:hover {
+  transform: none !important;
+}
+
+.achievement-card:hover {
+  transform: none !important;
+  background-color: rgba(255,255,255,0.06) !important;
+}
+
+.reddit-post-card:hover {
+  transform: none !important;
+  background-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+.twitch-stream-card:hover, .youtube-video-card:hover {
+  transform: none !important;
+}
+
+/* System diagnostics background override */
+.dxdiag-check-section {
+  background: rgba(255, 255, 255, 0.02) !important;
+  border: 1px solid var(--border-glass) !important;
+}
+
+/* Diagnostic badges overrides */
+.dxdiag-status-badge.pass {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  color: var(--text-white) !important;
+  border: 1px solid var(--text-white) !important;
+}
+.dxdiag-status-badge.fail {
+  background-color: rgba(255, 255, 255, 0.03) !important;
+  color: var(--text-muted) !important;
+  border: 1px solid var(--border-glass) !important;
+}
+.dxdiag-status-badge.warning {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  color: var(--text-light) !important;
+  border: 1px solid var(--border-glass) !important;
+}
+.dxdiag-status-badge.info {
+  background-color: transparent !important;
+  color: var(--text-muted) !important;
+  border: 1px solid var(--border-glass) !important;
+}
+
+.dxdiag-verdict {
+  background-color: rgba(255, 255, 255, 0.02) !important;
+  border: 1px solid var(--border-glass) !important;
+}
+.dxdiag-verdict.pass {
+  border-left: 4px solid var(--text-white) !important;
+  color: var(--text-white) !important;
+}
+.dxdiag-verdict.fail {
+  border-left: 4px solid var(--text-muted) !important;
+  color: var(--text-muted) !important;
+}
+.dxdiag-verdict.warning {
+  border-left: 4px solid var(--text-light) !important;
+  color: var(--text-light) !important;
+}
+
+/* Metacritic color overrides */
+.metacritic-badge-large {
+  border: 2px solid var(--text-white) !important;
+  background-color: rgba(0, 0, 0, 0.9) !important;
+}
+
+/* Tag clouds and discover pills */
+.tag-pill:hover,
+.creator-pill:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: var(--text-white) !important;
+  color: var(--text-white) !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+.tag-pill.active,
+.creator-pill.active {
+  background: rgba(255, 255, 255, 0.12) !important;
+  border-color: var(--text-white) !important;
+  color: var(--text-white) !important;
+}
+
+/* Hero banner status badge */
+.hero-banner-status-badge {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+  color: var(--text-white) !important;
+  border: 1px solid var(--text-white) !important;
+  box-shadow: none !important;
+}
+.hero-banner-notes {
+  border-left: 3px solid var(--text-white) !important;
+}
+
+/* Substatus indicators monochrome mapping */
+.substatus-pill.status-currently_playing,
+.substatus-pill.status-on_hold,
+.substatus-pill.status-endless,
+.substatus-pill.status-replaying,
+.substatus-pill.status-next_in_line,
+.substatus-pill.status-backlog,
+.substatus-pill.status-wishlist,
+.substatus-pill.status-completed_story,
+.substatus-pill.status-completed_100,
+.substatus-pill.status-dropped {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  color: var(--text-light) !important;
+  border: 1px solid var(--border-glass) !important;
+}
+
+/* Star rating completed selector */
+.star-btn:hover,
+.star-btn.active {
+  color: var(--text-white) !important;
+}
+
+/* Dashboard stacked progress bars monochrome mapping */
+.stacked-progress-bar .bar-segment.playing {
+  background-color: var(--text-white) !important;
+}
+.stacked-progress-bar .bar-segment.backlog {
+  background-color: var(--text-muted) !important;
+}
+.stacked-progress-bar .bar-segment.completed {
+  background-color: var(--text-light) !important;
+}
+.progress-bar-legend .legend-color.playing { background-color: var(--text-white) !important; }
+.progress-bar-legend .legend-color.backlog { background-color: var(--text-muted) !important; }
+.progress-bar-legend .legend-color.completed { background-color: var(--text-light) !important; }
+
+/* Dashboard status cards icon colors overrides */
+.stat-icon-wrapper.purple,
+.stat-icon-wrapper.blue,
+.stat-icon-wrapper.orange,
+.stat-icon-wrapper.green {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  color: var(--text-white) !important;
+}
+
+/* Ensure dropdown options have readable text on dark background on Windows/Linux */
+select {
+  color-scheme: dark !important;
+}
+select option {
+  background-color: var(--bg-panel) !important;
+  color: var(--text-white) !important;
+}
+
 

@@ -571,9 +571,9 @@ export async function openGameDetails(gameId) {
     if (modalMetaScore) {
       if (metacritic) {
         modalMetaScore.textContent = metacritic;
-        if (metacritic >= 75) modalMetaScore.style.borderColor = '#10b981';
-        else if (metacritic >= 50) modalMetaScore.style.borderColor = '#f59e0b';
-        else modalMetaScore.style.borderColor = '#ef4444';
+        if (metacritic >= 75) modalMetaScore.style.borderColor = '#ffffff';
+        else if (metacritic >= 50) modalMetaScore.style.borderColor = '#a3a3a3';
+        else modalMetaScore.style.borderColor = '#404040';
       } else {
         modalMetaScore.textContent = '--';
         modalMetaScore.style.borderColor = 'var(--border-glass)';
@@ -727,7 +727,7 @@ export async function openGameDetails(gameId) {
               const leftContent = `
                 <div style="flex: 1; display: flex; flex-direction: column; gap: 6px; min-width: 0;">
                   <div style="display: flex; align-items: center; gap: 6px; font-size: 10px; color: var(--text-muted);">
-                    <svg viewBox="0 0 24 24" width="12" height="12" style="color: #ff4500; flex-shrink: 0;"><path fill="currentColor" d="M24 11.5c0-1.65-1.35-3-3-3-.96 0-1.86.48-2.42 1.24-1.64-1-3.75-1.64-5.99-1.72l1.27-3.99 4.14.88c.02.69.58 1.25 1.27 1.25 1.1 0 2-.9 2-2s-.9-2-2-2c-.93 0-1.7.64-1.92 1.5l-4.63-1c-.24-.04-.47.1-.53.33l-1.46 4.62c-2.32.06-4.52.7-6.2 1.72-.56-.75-1.46-1.24-2.42-1.24-1.65 0-3 1.35-3 3 0 1.05.54 1.97 1.37 2.51-.04.29-.07.58-.07.87 0 4.14 4.93 7.5 11 7.5s11-3.36 11-7.5c0-.29-.03-.58-.07-.87.83-.54 1.37-1.46 1.37-2.51zm-18 1c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5-.67 1.5-1.5 1.5-1.5-.67-1.5-1.5zm10.7 4.9c-.83.83-2.4 1.1-3.2 1.1s-2.37-.27-3.2-1.1c-.2-.2-.2-.51 0-.71.2-.2.51-.2.71 0 .6.6 1.7.8 2.49.8s1.89-.2 2.49-.8c.2-.2.51-.2.71 0 .2.2.2.51 0 .71zm-.7-3.4c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+                    <svg viewBox="0 0 24 24" width="12" height="12" style="color: var(--text-light); flex-shrink: 0;"><path fill="currentColor" d="M24 11.5c0-1.65-1.35-3-3-3-.96 0-1.86.48-2.42 1.24-1.64-1-3.75-1.64-5.99-1.72l1.27-3.99 4.14.88c.02.69.58 1.25 1.27 1.25 1.1 0 2-.9 2-2s-.9-2-2-2c-.93 0-1.7.64-1.92 1.5l-4.63-1c-.24-.04-.47.1-.53.33l-1.46 4.62c-2.32.06-4.52.7-6.2 1.72-.56-.75-1.46-1.24-2.42-1.24-1.65 0-3 1.35-3 3 0 1.05.54 1.97 1.37 2.51-.04.29-.07.58-.07.87 0 4.14 4.93 7.5 11 7.5s11-3.36 11-7.5c0-.29-.03-.58-.07-.87.83-.54 1.37-1.46 1.37-2.51zm-18 1c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5-.67 1.5-1.5 1.5-1.5-.67-1.5-1.5zm10.7 4.9c-.83.83-2.4 1.1-3.2 1.1s-2.37-.27-3.2-1.1c-.2-.2-.2-.51 0-.71.2-.2.51-.2.71 0 .6.6 1.7.8 2.49.8s1.89-.2 2.49-.8c.2-.2.51-.2.71 0 .2.2.2.51 0 .71zm-.7-3.4c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
                     <span>Đăng bởi <strong>u/${post.username || 'ẩn danh'}</strong></span>
                     ${dateStr ? `<span>•</span> <span>${dateStr}</span>` : ''}
                   </div>
@@ -789,9 +789,8 @@ export async function openGameDetails(gameId) {
 
               item.innerHTML = `
                 <div style="position: relative; width: 150px; height: 85px; border-radius: 6px; overflow: hidden; border: 1px solid var(--border-glass); background: #000;">
-                  <img src="${stream.thumbnail || 'src/css/placeholder.svg'}" style="width: 100%; height: 100%; object-fit: cover;" alt="${stream.name}">
                   ${viewText ? `<div style="position: absolute; bottom: 4px; left: 4px; background: rgba(0,0,0,0.8); color: #fff; font-size: 8px; padding: 2px 4px; border-radius: 3px; font-weight: bold;">${viewText}</div>` : ''}
-                  <div style="position: absolute; top: 4px; right: 4px; background: #6441a5; color: #fff; font-size: 8px; padding: 2px 4px; border-radius: 3px; font-weight: bold; text-transform: uppercase;">Live</div>
+                  <div style="position: absolute; top: 4px; right: 4px; background: #3f3f46; color: #fff; font-size: 8px; padding: 2px 4px; border-radius: 3px; font-weight: bold; text-transform: uppercase;">Live</div>
                 </div>
                 <div style="font-size: 11px; font-weight: 700; color: var(--text-white); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px;" title="${stream.name}">${stream.name}</div>
                 <div style="font-size: 9px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${stream.user_name || 'Streamer'}</div>
@@ -912,10 +911,10 @@ function renderRatingsChart(ratings) {
     const sorted = [...ratings].sort((a, b) => order.indexOf(a.title) - order.indexOf(b.title));
     
     const colors = {
-      exceptional: '#8b5cf6', // Purple
-      recommended: '#3b82f6', // Blue
-      meh: '#f59e0b',         // Orange
-      skip: '#ef4444'         // Red
+      exceptional: '#ffffff', // White
+      recommended: '#d1d5db', // Light Gray
+      meh: '#9ca3af',         // Gray
+      skip: '#4b5563'         // Dark Gray
     };
     
     const labels = {
