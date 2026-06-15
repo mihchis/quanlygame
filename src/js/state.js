@@ -17,6 +17,20 @@ export const state = {
   searchQueryCached: '',
   searchGamesCached: null,
 
+  // Pagination buffer arrays and API trackers
+  trendingGamesBuffer: null,
+  trendingApiPage: 0,
+  trendingTotalCount: 0,
+  upcomingGamesBuffer: null,
+  upcomingApiPage: 0,
+  upcomingTotalCount: 0,
+  browseGamesBuffer: null,
+  browseApiPage: 0,
+  browseTotalCount: 0,
+  searchGamesBuffer: null,
+  searchApiPage: 0,
+  searchTotalCount: 0,
+
   // Genres & Tags browser state
   genresCached: null,
   tagsCached: null,
@@ -96,6 +110,12 @@ export async function saveGames(games) {
     const success = await window.api.saveGames(games);
     if (success) {
       state.localGames = games;
+      // Sync with Firebase Firestore in the background
+      import('./firebase.js').then(fb => {
+        fb.syncGamesToCloud(games);
+      }).catch(err => {
+        console.error('Error triggering cloud sync:', err);
+      });
     }
     return success;
   } catch (err) {

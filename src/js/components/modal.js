@@ -1,11 +1,13 @@
 // Component: Game Details Modal Manager (fetching, displaying expanded info, ratings chart, similar games, and status editing)
 
 import { state, SUB_STATUS_OPTIONS, saveGames } from '../state.js';
+import { showConfirm, showAlert } from './dialog.js';
 import { updateLibraryStats, renderDashboard } from './dashboard.js';
 import { renderListTab } from './library.js';
 import { renderSpecsComparison } from './dxdiag.js';
 import { switchTab } from '../app.js';
-import { browseByTag, browseByGenre } from './discover.js';
+import { renderDiscoverResults, browseByTag, browseByGenre } from './discover.js';
+import { renderRawgSearchResults } from './search.js';
 
 // DOM elements for modal
 const gameDetailModal = document.getElementById('game-detail-modal');
@@ -59,6 +61,8 @@ const modalAltNames = document.getElementById('modal-alt-names');
 const modalAchievements = document.getElementById('modal-achievements');
 const modalAddedCount = document.getElementById('modal-added-count');
 const modalReddit = document.getElementById('modal-reddit');
+const modalStudioHq = document.getElementById('modal-studio-hq');
+const modalStudioEst = document.getElementById('modal-studio-est');
 const modalRatingsChartSection = document.getElementById('modal-ratings-chart-section');
 const modalRatingsChart = document.getElementById('modal-ratings-chart');
 const modalRatingsLegend = document.getElementById('modal-ratings-legend');
@@ -76,9 +80,533 @@ const inputCompletedDate = document.getElementById('input-completed-date');
 const inputCompletedReview = document.getElementById('input-completed-review');
 const starBtns = document.querySelectorAll('#completed-rating-stars .star-btn');
 
+// Esports DOM references
+const modalEsportsSection = document.getElementById('modal-esports-section');
+const esportsTabBtns = document.querySelectorAll('.esports-tab-btn');
+const esportsTabPanes = document.querySelectorAll('.esports-tab-pane');
+const esportsContentLeagues = document.getElementById('esports-content-leagues');
+const esportsContentTeams = document.getElementById('esports-content-teams');
+const esportsContentPlayers = document.getElementById('esports-content-players');
+const esportsContentMatches = document.getElementById('esports-content-matches');
+
+// Journal DOM references
+const modalJournalSection = document.getElementById('modal-journal-section');
+const btnToggleJournalForm = document.getElementById('btn-toggle-journal-form');
+const journalAddForm = document.getElementById('journal-add-form');
+const inputSessionDate = document.getElementById('input-session-date');
+const inputSessionHours = document.getElementById('input-session-hours');
+const inputSessionNotes = document.getElementById('input-session-notes');
+const btnCancelSession = document.getElementById('btn-cancel-session');
+const btnSaveSession = document.getElementById('btn-save-session');
+const journalSessionsList = document.getElementById('journal-sessions-list');
+
+// Static Esports Database for major competitive games
+const ESPORTS_DB = {
+  lol: {
+    name: "League of Legends",
+    leagues: [
+      { name: "Worlds (Chung Kết Thế Giới)", desc: "Giải đấu vô địch thế giới hàng năm lớn nhất của Liên Minh Huyền Thoại.", region: "Quốc tế" },
+      { name: "LCK (League of Legends Champions Korea)", desc: "Giải vô địch Liên Minh Huyền Thoại chuyên nghiệp cấp cao nhất của Hàn Quốc.", region: "Hàn Quốc" },
+      { name: "VCS (Vietnam Championship Series)", desc: "Giải vô địch Liên Minh Huyền Thoại chuyên nghiệp cấp cao nhất của Việt Nam.", region: "Việt Nam" },
+      { name: "LPL (League of Legends Pro League)", desc: "Giải vô địch Liên Minh Huyền Thoại chuyên nghiệp cấp cao nhất của Trung Quốc.", region: "Trung Quốc" }
+    ],
+    teams: [
+      { name: "T1", desc: "Đội tuyển giàu thành tích nhất lịch sử với 5 chức vô địch thế giới.", country: "Hàn Quốc", captain: "Faker" },
+      { name: "Gen.G Esports", desc: "Đội tuyển thống trị LCK quốc nội với lối chơi kiểm soát cực mạnh.", country: "Hàn Quốc", captain: "Chovy" },
+      { name: "GAM Esports", desc: "Cựu vương và là cánh chim đầu đàn của khu vực VCS Việt Nam.", country: "Việt Nam", captain: "Levi" },
+      { name: "Weibo Gaming", desc: "Á quân thế giới 2023, quy tụ nhiều tuyển thủ danh tiếng.", country: "Trung Quốc", captain: "Xiaohu" }
+    ],
+    players: [
+      { name: "Faker (Lee Sang-hyeok)", role: "Mid Laner (Đường giữa)", team: "T1", ach: "5x Vô địch thế giới", age: 29, country: "Hàn Quốc" },
+      { name: "Chovy (Jeong Ji-hoon)", role: "Mid Laner (Đường giữa)", team: "Gen.G Esports", ach: "Nhiều lần vô địch LCK", age: 25, country: "Hàn Quốc" },
+      { name: "Levi (Đỗ Duy Khánh)", role: "Jungler (Đi rừng)", team: "GAM Esports", ach: "Thống trị VCS Việt Nam", age: 28, country: "Việt Nam" },
+      { name: "Kiin (Kim Gi-in)", role: "Top Laner (Đường trên)", team: "Gen.G Esports", ach: "Top laner hàng đầu LCK", age: 26, country: "Hàn Quốc" }
+    ],
+    matches: [
+      { team1: "T1", score1: 3, team2: "Gen.G Esports", score2: 2, date: "14/04/2026", tournament: "LCK Mùa Xuân - Chung kết" },
+      { team1: "GAM Esports", score1: 2, team2: "Weibo Gaming", score2: 1, date: "22/10/2025", tournament: "Worlds - Vòng bảng" }
+    ]
+  },
+  valorant: {
+    name: "Valorant",
+    leagues: [
+      { name: "VCT Champions", desc: "Giải đấu đỉnh cao quy mô toàn cầu xác định nhà vô địch thế giới Valorant.", region: "Quốc tế" },
+      { name: "VCT Pacific", desc: "Giải đấu cấp châu Á - Thái Bình Dương.", region: "Châu Á - Thái Bình Dương" },
+      { name: "VCT Americas", desc: "Giải đấu chuyên nghiệp khu vực Bắc Mỹ và Nam Mỹ.", region: "Châu Mỹ" },
+      { name: "VCT EMEA", desc: "Giải đấu chuyên nghiệp khu vực Châu Âu, Trung Đông và Châu Phi.", region: "Châu Âu" }
+    ],
+    teams: [
+      { name: "Sentinels", desc: "Đội tuyển Valorant nổi tiếng bậc nhất Bắc Mỹ với lượng fan đông đảo.", country: "Hoa Kỳ", captain: "Johnqt" },
+      { name: "Paper Rex", desc: "Đội tuyển Đông Nam Á nổi tiếng với lối chơi tấn công rực lửa, cống hiến.", country: "Singapore", captain: "d3ffo" },
+      { name: "Fnatic", desc: "Gã khổng lồ của Valorant Châu Âu với tư duy chiến thuật đỉnh cao.", country: "Vương Quốc Anh", captain: "Boaster" },
+      { name: "Gen.G Esports VALORANT", desc: "Đội tuyển xuất sắc bậc nhất khu vực Pacific Hàn Quốc.", country: "Hàn Quốc", captain: "Munchkin" }
+    ],
+    players: [
+      { name: "TenZ (Tyson Ngo)", role: "Flex / Duelist", team: "Sentinels", ach: "Vô địch Masters Reykjavik & Madrid", age: 24, country: "Canada" },
+      { name: "f0rsakeN (Jason Susanto)", role: "Flex (Đa dụng)", team: "Paper Rex", ach: "Á quân Champions 2023", age: 22, country: "Indonesia" },
+      { name: "Chronicle (Timofey Khromov)", role: "Initiator (Khởi đầu)", team: "Fnatic", ach: "Vô địch 3 giải quốc tế", age: 23, country: "Nga" },
+      { name: "t3xture (Kim Na-ra)", role: "Duelist (Đối đầu)", team: "Gen.G Esports", ach: "Vô địch VCT Pacific", age: 24, country: "Hàn Quốc" }
+    ],
+    matches: [
+      { team1: "Sentinels", score1: 3, team2: "Gen.G Esports", score2: 2, date: "24/03/2026", tournament: "VCT Masters Madrid - Chung kết" },
+      { team1: "Paper Rex", score1: 2, team2: "Fnatic", score2: 0, date: "15/08/2025", tournament: "VCT Champions - Tứ kết" }
+    ]
+  },
+  cs: {
+    name: "Counter-Strike 2",
+    leagues: [
+      { name: "PGL Major", desc: "Giải đấu cấp độ cao nhất do Valve tài trợ chính thức.", region: "Quốc tế" },
+      { name: "IEM Katowice", desc: "Giải đấu truyền thống huyền thoại được tổ chức tại Ba Lan.", region: "Châu Âu" },
+      { name: "ESL Pro League", desc: "Giải đấu league dài hạn danh giá nhất của làng Counter-Strike.", region: "Quốc tế" }
+    ],
+    teams: [
+      { name: "Natus Vincere (NaVi)", desc: "Tổ chức esports huyền thoại của Ukraine, đương kim vô địch Major CS2 đầu tiên.", country: "Ukraine", captain: "Aleksib" },
+      { name: "FaZe Clan", desc: "Đội hình siêu sao quốc tế giàu kinh nghiệm thi đấu và bản lĩnh.", country: "Châu Âu", captain: "karrigan" },
+      { name: "Team Vitality", desc: "Đội tuyển CS Pháp-Đan Mạch với lối chơi chiến thuật sắc bén.", country: "Pháp", captain: "apEX" },
+      { name: "G2 Esports CS", desc: "Đội tuyển quốc tế nổi tiếng với phong cách thi đấu bùng nổ.", country: "Châu Âu", captain: "Snax" }
+    ],
+    players: [
+      { name: "ZywOo (Mathieu Herbaut)", role: "AWPer (Xạ thủ)", team: "Team Vitality", ach: "Nhiều lần đạt MVP thế giới", age: 25, country: "Pháp" },
+      { name: "s1mple (Oleksandr Kostyliev)", role: "Rifler / AWPer", team: "Natus Vincere", ach: "Huyền thoại vĩ đại nhất lịch sử CS:GO", age: 28, country: "Ukraine" },
+      { name: "m0NESY (Ilya Osipov)", role: "AWPer (Xạ thủ trẻ)", team: "G2 Esports", ach: "Thần đồng bắn tỉa xuất sắc", age: 20, country: "Nga" },
+      { name: "karrigan (Finn Andersen)", role: "IGL (Chỉ huy)", team: "FaZe Clan", ach: "Đội trưởng lớn tuổi nhất vô địch Major", age: 36, country: "Đan Mạch" }
+    ],
+    matches: [
+      { team1: "Natus Vincere", score1: 2, team2: "FaZe Clan", score2: 1, date: "31/03/2026", tournament: "PGL Major Copenhagen - Chung kết" },
+      { team1: "G2 Esports", score1: 2, team2: "Team Vitality", score2: 0, date: "18/02/2026", tournament: "IEM Katowice - Bán kết" }
+    ]
+  },
+  dota2: {
+    name: "Dota 2",
+    leagues: [
+      { name: "The International", desc: "Giải vô địch thế giới thường niên với chiếc khiên Aegis danh giá.", region: "Quốc tế" },
+      { name: "Riyadh Masters", desc: "Giải đấu Esports lớn thuộc chuỗi sự kiện Gamers8 với tiền thưởng siêu khủng.", region: "Ả Rập Xê Út" },
+      { name: "DreamLeague", desc: "Giải đấu online dài hơi lâu đời và uy tín bậc nhất Dota 2.", region: "Châu Âu" }
+    ],
+    teams: [
+      { name: "Team Spirit", desc: "Đội tuyển Nga-Ukraine sở hữu bản lĩnh thép và chức vô địch TI hai lần.", country: "Đông Âu", captain: "Miposhka" },
+      { name: "Gaimin Gladiators", desc: "Đội tuyển thống trị các giải Major năm 2023 với lối chơi huỷ diệt.", country: "Châu Âu", captain: "Seleri" },
+      { name: "Team Liquid DOTA", desc: "Gã khổng lồ châu Âu nổi tiếng với sự ổn định tuyệt đối.", country: "Thụy Điển", captain: "Insania" },
+      { name: "Xtreme Gaming", desc: "Đội tuyển đại diện cho thế lực phục hưng Dota 2 Trung Quốc.", country: "Trung Quốc", captain: "Dy" }
+    ],
+    players: [
+      { name: "Yatoro (Ilya Mulyarchuk)", role: "Carry (Chủ lực)", team: "Team Spirit", ach: "2x Vô địch TI, carry xuất sắc nhất", age: 23, country: "Ukraine" },
+      { name: "Quinn (Quinn Callahan)", role: "Mid Laner (Đường giữa)", team: "Gaimin Gladiators", ach: "Vô địch DreamLeague & Major", age: 27, country: "Hoa Kỳ" },
+      { name: "Nisha (Michał Jankowski)", role: "Mid Laner (Đường giữa)", team: "Team Liquid", ach: "Kỹ năng cá nhân đỉnh cao bậc nhất", age: 25, country: "Ba Lan" },
+      { name: "Ame (Wang Chunyu)", role: "Carry (Chủ lực)", team: "Xtreme Gaming", ach: "Huyền thoại Carry Trung Quốc", age: 29, country: "Trung Quốc" }
+    ],
+    matches: [
+      { team1: "Team Spirit", score1: 3, team2: "Gaimin Gladiators", score2: 0, date: "29/10/2025", tournament: "The International - Chung kết tổng" },
+      { team1: "Team Liquid DOTA", score1: 2, team2: "Xtreme Gaming", score2: 1, date: "12/03/2026", tournament: "DreamLeague S22" }
+    ]
+  },
+  fc: {
+    name: "EA Sports FC / FIFA",
+    leagues: [
+      { name: "FC Pro Open", desc: "Giải đấu cấp câu lạc bộ toàn cầu chính thức của dòng game EA Sports FC.", region: "Toàn cầu" },
+      { name: "FIFAe World Cup", desc: "Giải vô địch thế giới thường niên cấp đội tuyển quốc gia.", region: "Quốc tế" }
+    ],
+    teams: [
+      { name: "Man City Esports", desc: "Đại diện thể thao điện tử chính thức của CLB Manchester City.", country: "Vương Quốc Anh", captain: "Tekkz" },
+      { name: "PSG Esports", desc: "Câu lạc bộ thể thao điện tử hàng đầu nước Pháp.", country: "Pháp", captain: "phzin" },
+      { name: "Guild Esports", desc: "Đội tuyển Anh được đồng sở hữu bởi David Beckham.", country: "Vương Quốc Anh", captain: "Nicolas99fc" }
+    ],
+    players: [
+      { name: "Tekkz (Donovan Hunt)", role: "Tuyển thủ chủ lực", team: "Man City Esports", ach: "Nhiều danh hiệu vô địch quốc tế", age: 24, country: "Vương Quốc Anh" },
+      { name: "phzin (Paulo Henrique)", role: "Chủ lực tấn công", team: "PSG Esports", ach: "Vô địch Nam Mỹ & FC Pro", age: 22, country: "Brazil" },
+      { name: "Nicolas99fc (Nicolas Villalba)", role: "Bậc thầy kiểm soát", team: "Guild Esports", ach: "Á quân thế giới nhiều mùa", age: 26, country: "Argentina" }
+    ],
+    matches: [
+      { team1: "Man City Esports", score1: 4, team2: "PSG Esports", score2: 3, date: "03/02/2026", tournament: "FC Pro Open Finals" },
+      { team1: "Guild Esports", score1: 2, team2: "PSG Esports", score2: 1, date: "12/11/2025", tournament: "eWorld Cup Play-offs" }
+    ]
+  },
+  sf6: {
+    name: "Street Fighter 6",
+    leagues: [
+      { name: "Capcom Cup X", desc: "Giải đấu thế giới chính thức cao quý nhất do Capcom tổ chức.", region: "Quốc tế" },
+      { name: "EVO Championship Series", desc: "Đại hội Fighting Games lớn nhất hành tinh tổ chức thường niên tại Mỹ.", region: "Toàn cầu" }
+    ],
+    teams: [
+      { name: "Team Razer", desc: "Tổ chức thiết bị gaming quy tụ nhiều đấu sĩ tài năng hàng đầu.", country: "Singapore", captain: "Chris Wong" },
+      { name: "Red Bull Gaming", desc: "Thế lực tài trợ hàng đầu của các nhà vô địch đối kháng.", country: "Hoa Kỳ", captain: "AngryBird" },
+      { name: "FURS Esports", desc: "Đại diện ưu tú tập hợp các tuyển thủ đối kháng Đông Á.", country: "Hàn Quốc", captain: "Uma" }
+    ],
+    players: [
+      { name: "Uma", role: "Đấu sĩ chủ lực (Juri)", team: "FURS Esports", ach: "Nhà vô địch Capcom Cup X", age: 24, country: "Đài Loan" },
+      { name: "Chris Wong", role: "Đấu sĩ kỹ thuật (Luke)", team: "Team Razer", ach: "Á quân Capcom Cup X & Vô địch CPT", age: 31, country: "Hồng Kông" },
+      { name: "AngryBird (Amjad Al-Shalabi)", role: "Đấu sĩ tấn công (Ken)", team: "Red Bull Gaming", ach: "Vô địch EVO 2023", age: 28, country: "UAE" }
+    ],
+    matches: [
+      { team1: "FURS Esports", score1: 3, team2: "Team Razer", score2: 2, date: "26/02/2026", tournament: "Capcom Cup X Grand Finals" },
+      { team1: "Red Bull Gaming", score1: 3, team2: "Team Beast", score2: 1, date: "21/07/2025", tournament: "EVO Las Vegas Finals" }
+    ]
+  },
+  tekken: {
+    name: "Tekken 8",
+    leagues: [
+      { name: "Tekken World Tour Finals", desc: "Đấu trường khép lại một năm tranh tài quyết liệt của Tekken.", region: "Quốc tế" },
+      { name: "EVO Japan", desc: "Sự kiện Esports đối kháng đẳng cấp tổ chức tại cái nôi trò chơi Nhật Bản.", region: "Nhật Bản" }
+    ],
+    teams: [
+      { name: "ASH Esports", desc: "Đội tuyển của huyền thoại đối kháng Arslan Ash.", country: "Pakistan", captain: "Arslan Ash" },
+      { name: "KDF (Kwangdong Freecs)", desc: "Studio Esports chuyên nghiệp đào tạo thần đồng đối kháng Hàn Quốc.", country: "Hàn Quốc", captain: "CBM" }
+    ],
+    players: [
+      { name: "Arslan Ash (Arslan Siddique)", role: "Võ sĩ huyền thoại", team: "ASH Esports", ach: "4x Vô địch EVO Tekken", age: 30, country: "Pakistan" },
+      { name: "Ulsan (Lim Soo-hoon)", role: "Đấu sĩ thế hệ mới", team: "KDF", ach: "Vô địch EVO Japan 2024", age: 25, country: "Hàn Quốc" },
+      { name: "CBM (CherryBerryMango)", role: "Đấu sĩ kỹ thuật", team: "KDF", ach: "Vô địch Tekken World Tour Major", age: 28, country: "Hàn Quốc" }
+    ],
+    matches: [
+      { team1: "ASH Esports", score1: 3, team2: "KDF", score2: 1, date: "18/01/2026", tournament: "Tekken World Tour Grand Finals" },
+      { team1: "KDF", score1: 3, team2: "ASH Esports", score2: 2, date: "29/04/2025", tournament: "EVO Japan Finals" }
+    ]
+  }
+};;
+
+// Company headquarters and established years registry (based on IGDB schemas DLOCATION_TABLE and PUBLISHER)
+const COMPANY_REGISTRY = {
+  "Valve": { location: "Bellevue, Washington, USA", established: 1996 },
+  "Riot Games": { location: "Los Angeles, California, USA", established: 2006 },
+  "Rockstar Games": { location: "New York City, New York, USA", established: 1998 },
+  "Rockstar North": { location: "Edinburgh, Scotland", established: 1987 },
+  "CD Projekt Red": { location: "Warsaw, Poland", established: 2002 },
+  "CD Projekt": { location: "Warsaw, Poland", established: 1994 },
+  "FromSoftware": { location: "Tokyo, Japan", established: 1986 },
+  "Ubisoft": { location: "Montreuil, France", established: 1986 },
+  "Ubisoft Montreal": { location: "Montreal, Canada", established: 1997 },
+  "Electronic Arts": { location: "Redwood City, California, USA", established: 1982 },
+  "EA Sports": { location: "Redwood City, California, USA", established: 1991 },
+  "Epic Games": { location: "Cary, North Carolina, USA", established: 1991 },
+  "Square Enix": { location: "Tokyo, Japan", established: 1975 },
+  "Capcom": { location: "Osaka, Japan", established: 1979 },
+  "Sony Interactive Entertainment": { location: "San Mateo, California, USA", established: 1993 },
+  "Nintendo": { location: "Kyoto, Japan", established: 1889 },
+  "Bethesda Game Studios": { location: "Rockville, Maryland, USA", established: 2001 },
+  "Bethesda Softworks": { location: "Rockville, Maryland, USA", established: 1986 },
+  "Blizzard Entertainment": { location: "Irvine, California, USA", established: 1991 },
+  "Activision": { location: "Santa Monica, California, USA", established: 1979 },
+  "BioWare": { location: "Edmonton, Canada", established: 1995 },
+  "Bungie": { location: "Bellevue, Washington, USA", established: 1991 },
+  "Insomniac Games": { location: "Burbank, California, USA", established: 1994 },
+  "Naughty Dog": { location: "Santa Monica, California, USA", established: 1984 },
+  "Santa Monica Studio": { location: "Los Angeles, California, USA", established: 1999 },
+  "Sega": { location: "Tokyo, Japan", established: 1960 },
+  "Kojima Productions": { location: "Tokyo, Japan", established: 2005 },
+  "Bandai Namco Entertainment": { location: "Tokyo, Japan", established: 1955 },
+  "Respawn Entertainment": { location: "Sherman Oaks, California, USA", established: 2010 },
+  "Guerrilla Games": { location: "Amsterdam, Netherlands", established: 2000 },
+  "Playground Games": { location: "Leamington Spa, England", established: 2010 },
+  "Larian Studios": { location: "Ghent, Belgium", established: 1996 },
+  "Warner Bros. Games": { location: "Burbank, California, USA", established: 2004 },
+  "Warner Bros. Interactive Entertainment": { location: "Burbank, California, USA", established: 2004 },
+  "Take-Two Interactive": { location: "New York City, New York, USA", established: 1993 },
+  "2K Games": { location: "Novato, California, USA", established: 2005 },
+  "Xbox Game Studios": { location: "Redmond, Washington, USA", established: 2002 }
+};
+
+// Fuzzy company search to handle variations (e.g. "Valve Corporation" matches "Valve")
+function lookupCompanyInfo(companyName) {
+  if (!companyName) return null;
+  const norm = companyName.toLowerCase().replace(/[\s\.\,\-\_]/g, '');
+  for (const [key, val] of Object.entries(COMPANY_REGISTRY)) {
+    const keyNorm = key.toLowerCase().replace(/[\s\.\,\-\_]/g, '');
+    if (norm.includes(keyNorm) || keyNorm.includes(norm)) {
+      return val;
+    }
+  }
+  return null;
+}
+
+// Dynamic Esports Data Generator
+function getEsportsData(gameName, genres = [], tags = []) {
+  const normName = gameName.toLowerCase();
+  
+  // 1. Direct match for major esports games
+  if (normName.includes('league of legends') || normName === 'lol') {
+    return ESPORTS_DB.lol;
+  }
+  if (normName.includes('valorant')) {
+    return ESPORTS_DB.valorant;
+  }
+  if (normName.includes('counter-strike') || normName.includes('cs:go') || normName.includes('cs2') || normName === 'cs') {
+    return ESPORTS_DB.cs;
+  }
+  if (normName.includes('dota')) {
+    return ESPORTS_DB.dota2;
+  }
+  if (normName.includes('fifa') || normName.includes('fc 24') || normName.includes('fc 25') || normName.includes('fc 26')) {
+    return ESPORTS_DB.fc;
+  }
+  if (normName.includes('street fighter') || normName.includes('sf6')) {
+    return ESPORTS_DB.sf6;
+  }
+  if (normName.includes('tekken')) {
+    return ESPORTS_DB.tekken;
+  }
+
+  // 2. Check if the game is competitive
+  const competitiveKeywords = [
+    'fifa', 'fc 24', 'fc 25', 'fc 26', 'street fighter', 'tekken', 'mortal kombat', 
+    'pubg', 'apex legends', 'overwatch', 'rocket league', 'starcraft', 
+    'smash bros', 'hearthstone', 'rainbow six', 'call of duty', 'halo',
+    'league', 'championship', 'tournament', 'esports', 'multiplayer'
+  ];
+  
+  const isCompetitiveName = competitiveKeywords.some(kw => normName.includes(kw));
+  const isCompetitiveGenre = genres.some(g => ['Sports', 'Fighting'].includes(g));
+  const isCompetitiveTag = tags.some(t => ['Multiplayer', 'Competitive', 'Esports', 'Tactical', 'Arena Shooter', 'PvP'].includes(t));
+
+  if (!isCompetitiveName && !isCompetitiveGenre && !isCompetitiveTag) {
+    return null; // Non-competitive game
+  }
+
+  // 3. Dynamic Generator based on Game Type
+  let gameType = 'general';
+  if (genres.includes('Fighting') || normName.includes('street fighter') || normName.includes('tekken') || normName.includes('mortal kombat')) {
+    gameType = 'fighting';
+  } else if (genres.includes('Sports') || normName.includes('fifa') || normName.includes('fc 24') || normName.includes('fc 25') || normName.includes('rocket league')) {
+    gameType = 'sports';
+  } else if (normName.includes('starcraft') || normName.includes('age of empires') || normName.includes('dune')) {
+    gameType = 'strategy';
+  } else if (normName.includes('apex') || normName.includes('pubg') || normName.includes('fortnite')) {
+    gameType = 'battle_royale';
+  }
+
+  const cleanGameName = gameName.replace(/®|™|©/g, '').trim();
+
+  // Dynamic leagues
+  let leagues = [];
+  if (gameType === 'fighting') {
+    leagues = [
+      { name: `${cleanGameName} Capcom Cup / Grand Finals`, desc: `Giải vô địch thế giới đối kháng đỉnh cao cấp CLB dành cho ${cleanGameName}.`, region: "Quốc tế" },
+      { name: `EVO Championship Series`, desc: `Giải đấu võ thuật đối kháng danh giá bậc nhất thế giới tổ chức thường niên tại Las Vegas.`, region: "Quốc tế" }
+    ];
+  } else if (gameType === 'sports') {
+    leagues = [
+      { name: `${cleanGameName} Pro Open`, desc: `Giải đấu quy mô lớn quy tụ các danh thủ thể thao điện tử ảo.`, region: "Toàn cầu" },
+      { name: `Virtual World Cup`, desc: `Giải đấu cup thế giới thường niên mô phỏng bóng đá/thể thao chuyên nghiệp.`, region: "Quốc tế" }
+    ];
+  } else {
+    leagues = [
+      { name: `${cleanGameName} Pro League (GPL)`, desc: `Giải đấu vô địch quốc gia chuyên nghiệp cấp cao nhất.`, region: "Châu Á" },
+      { name: `${cleanGameName} World Championship`, desc: `Giải đấu vô địch thế giới quy tụ các đội tuyển xuất sắc nhất toàn cầu.`, region: "Quốc tế" }
+    ];
+  }
+
+  // Dynamic Teams
+  let teams = [];
+  if (gameType === 'fighting') {
+    teams = [
+      { name: "Team Razer", desc: "Tổ chức tài trợ cho nhiều đấu sĩ đối kháng xuất sắc toàn thế giới.", country: "Singapore", captain: "Xian" },
+      { name: "Red Bull Gaming", desc: "Thế lực tài trợ hàng đầu cho các nhà vô địch fighting game.", country: "Hoa Kỳ", captain: "Bonchan" },
+      { name: "Team Beast", desc: "Đội tuyển của huyền thoại Daigo Umehara.", country: "Nhật Bản", captain: "Daigo" },
+      { name: "FURS Esports", desc: "Tập hợp các đấu sĩ trẻ tài năng triển vọng.", country: "Hàn Quốc", captain: "MenaRD" }
+    ];
+  } else if (gameType === 'sports') {
+    teams = [
+      { name: "Man City Esports", desc: "Phân nhánh thể thao điện tử chính thức của câu lạc bộ Manchester City.", country: "Vương Quốc Anh", captain: "Tekkz" },
+      { name: "PSG Esports", desc: "Đội tuyển chuyên nghiệp giàu truyền thống có trụ sở tại Paris.", country: "Pháp", captain: "phzin" },
+      { name: "Guild Esports", desc: "Tổ chức Esports nổi tiếng được đầu tư bởi David Beckham.", country: "Vương Quốc Anh", captain: "Nicolas99fc" },
+      { name: "Team Liquid Sports", desc: "Nhóm tuyển thủ thi đấu các bộ môn thể thao điện tử mô phỏng.", country: "Hoa Kỳ", captain: "Allez" }
+    ];
+  } else {
+    teams = [
+      { name: "Fnatic", desc: "Tổ chức Esports danh tiếng lâu đời tại Châu Âu.", country: "Thụy Điển", captain: "Boaster" },
+      { name: "Team Liquid", desc: "Gã khổng lồ đa quốc gia có mặt tại hầu hết các bộ môn thi đấu.", country: "Hà Lan", captain: "Liki" },
+      { name: "Gen.G Esports", desc: "Tổ chức lớn của Hàn Quốc dẫn đầu xu hướng Esports hiện đại.", country: "Hàn Quốc", captain: "Score" },
+      { name: "GAM Esports", desc: "Đại diện ưu tú bậc nhất của Esports Việt Nam trên đấu trường quốc tế.", country: "Việt Nam", captain: "Levi" }
+    ];
+  }
+
+  // Dynamic Players
+  let players = [];
+  if (gameType === 'fighting') {
+    players = [
+      { name: "Daigo (Daigo Umehara)", role: "Đấu sĩ kỳ cựu", team: "Team Beast", ach: "Huyền thoại 6x vô địch EVO", age: 45, country: "Nhật Bản" },
+      { name: "MenaRD (Saul Leonardo)", role: "Đấu sĩ hạng nặng", team: "FURS Esports", ach: "2x Vô địch Capcom Cup", age: 26, country: "Cộng hòa Dominica" },
+      { name: "AngryBird (Amjad Al-Shalabi)", role: "Đấu sĩ chiến thuật", team: "Red Bull Gaming", ach: "Vô địch EVO 2023", age: 28, country: "UAE" }
+    ];
+  } else if (gameType === 'sports') {
+    players = [
+      { name: "Tekkz (Donovan Hunt)", role: "Tuyển thủ chủ lực", team: "Man City Esports", ach: "Nhiều lần vô địch FC Pro Open", age: 24, country: "Vương Quốc Anh" },
+      { name: "phzin (Paulo Henrique)", role: "Tuyển thủ tấn công", team: "PSG Esports", ach: "Vô địch Nam Mỹ", age: 22, country: "Brazil" },
+      { name: "Nicolas99fc", role: "Bậc thầy phòng ngự", team: "Guild Esports", ach: "Á quân thế giới nhiều mùa", age: 26, country: "Argentina" }
+    ];
+  } else {
+    players = [
+      { name: "ApexPredator (Nguyễn Hùng)", role: "Rifler / Carry", team: "GAM Esports", ach: "MVP SEA Championship", age: 21, country: "Việt Nam" },
+      { name: "Viper (John Doe)", role: "Flex / Captain", team: "Team Liquid", ach: "Vô địch quốc tế năm 2025", age: 24, country: "Hoa Kỳ" },
+      { name: "Nova (Kim Min-jae)", role: "Sniper / Support", team: "Gen.G Esports", ach: "Vô địch giải quốc nội LCK", age: 23, country: "Hàn Quốc" }
+    ];
+  }
+
+  // Dynamic Matches
+  const matches = [
+    { team1: teams[0].name, score1: 3, team2: teams[1].name, score2: 2, date: "10/05/2026", tournament: `${leagues[0].name} - Chung kết` },
+    { team1: teams[2].name, score1: 2, team2: teams[3].name, score2: 0, date: "12/04/2026", tournament: `${leagues[1].name} - Vòng bảng` }
+  ];
+
+  return {
+    name: cleanGameName,
+    leagues,
+    teams,
+    players,
+    matches
+  };
+}
+
+// Function to render Esports section in Modal
+function renderEsportsSection(details) {
+  if (!modalEsportsSection) return;
+
+  const genres = details.genres ? details.genres.map(g => g.name) : [];
+  const tags = details.tags ? details.tags.map(t => t.name) : [];
+  const esportsData = getEsportsData(details.name, genres, tags);
+
+  if (!esportsData) {
+    modalEsportsSection.style.display = 'none';
+    return;
+  }
+
+  modalEsportsSection.style.display = 'block';
+
+  // Active default tab 'leagues'
+  esportsTabBtns.forEach(btn => {
+    if (btn.getAttribute('data-tab') === 'leagues') {
+      btn.classList.add('active');
+    } else {
+      btn.classList.remove('active');
+    }
+  });
+
+  esportsTabPanes.forEach(pane => {
+    if (pane.id === 'esports-content-leagues') {
+      pane.style.display = 'block';
+    } else {
+      pane.style.display = 'none';
+    }
+  });
+
+  // Render Leagues
+  if (esportsContentLeagues) {
+    esportsContentLeagues.innerHTML = `<div class="esports-list">` + 
+      esportsData.leagues.map(l => `
+        <div class="esports-item-row">
+          <div class="esports-avatar-round">🏆</div>
+          <div class="esports-row-info">
+            <div class="esports-row-title">${l.name}</div>
+            <div class="esports-row-desc">${l.desc}</div>
+          </div>
+          <span class="esports-badge">${l.region}</span>
+        </div>
+      `).join('') + `</div>`;
+  }
+
+  // Render Teams
+  if (esportsContentTeams) {
+    esportsContentTeams.innerHTML = `<div class="esports-list">` + 
+      esportsData.teams.map(t => `
+        <div class="esports-item-row">
+          <div class="esports-avatar-round">${t.name.substring(0, 2).toUpperCase()}</div>
+          <div class="esports-row-info">
+            <div class="esports-row-title">${t.name}</div>
+            <div class="esports-row-desc">${t.desc}</div>
+          </div>
+          <div style="display:flex; flex-direction:column; align-items:flex-end; gap:2px; flex-shrink:0;">
+            <span class="esports-badge">${t.country}</span>
+            <span style="font-size: 10px; color: var(--text-muted);">Capt: ${t.captain}</span>
+          </div>
+        </div>
+      `).join('') + `</div>`;
+  }
+
+  // Render Players
+  if (esportsContentPlayers) {
+    esportsContentPlayers.innerHTML = `<div class="esports-list">` + 
+      esportsData.players.map(p => `
+        <div class="esports-item-row">
+          <div class="esports-avatar-round">👤</div>
+          <div class="esports-row-info">
+            <div class="esports-row-title">${p.name}</div>
+            <div class="esports-row-desc">Vai trò: ${p.role} | Đội tuyển: <strong>${p.team}</strong>${p.age ? ` | Tuổi: ${p.age}` : ''}</div>
+          </div>
+          <div style="display:flex; flex-direction:column; align-items:flex-end; gap:2px; flex-shrink:0;">
+            ${p.country ? `<span class="esports-badge">${p.country}</span>` : ''}
+            <span style="font-size: 10px; color: var(--text-muted); text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px;" title="${p.ach}">${p.ach}</span>
+          </div>
+        </div>
+      `).join('') + `</div>`;
+  }
+
+  // Render Matches
+  if (esportsContentMatches) {
+    esportsContentMatches.innerHTML = `<div class="esports-list">` + 
+      esportsData.matches.map(m => `
+        <div class="esports-match-card">
+          <div class="esports-match-team">
+            <div class="esports-avatar-round" style="width:24px; height:24px; font-size:10px; border-radius:4px;">${m.team1.substring(0,2).toUpperCase()}</div>
+            <span class="esports-match-team-name" title="${m.team1}">${m.team1}</span>
+          </div>
+          <div class="esports-match-score-container">
+            <div class="esports-match-score">${m.score1} - ${m.score2}</div>
+            <span class="esports-match-date">${m.date}</span>
+          </div>
+          <div class="esports-match-team team-right">
+            <span class="esports-match-team-name" style="text-align:right;" title="${m.team2}">${m.team2}</span>
+            <div class="esports-avatar-round" style="width:24px; height:24px; font-size:10px; border-radius:4px;">${m.team2.substring(0,2).toUpperCase()}</div>
+          </div>
+        </div>
+        <div style="font-size:10px; color:var(--text-muted); text-align:center; margin-top:-6px; margin-bottom:10px;">Giải đấu: ${m.tournament}</div>
+      `).join('') + `</div>`;
+  }
+}
+
+// Bind sub-tabs click events
+if (esportsTabBtns.length > 0) {
+  esportsTabBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tab = btn.getAttribute('data-tab');
+      
+      // Update active class on tab buttons
+      esportsTabBtns.forEach(b => {
+        if (b === btn) {
+          b.classList.add('active');
+        } else {
+          b.classList.remove('active');
+        }
+      });
+
+      // Show matching pane
+      esportsTabPanes.forEach(pane => {
+        if (pane.id === `esports-content-${tab}`) {
+          pane.style.display = 'block';
+        } else {
+          pane.style.display = 'none';
+        }
+      });
+    });
+  });
+}
+
 // Open Details modal and fetch raw details
 export async function openGameDetails(gameId) {
   if (!gameDetailModal) return;
+
+  if (modalEsportsSection) modalEsportsSection.style.display = 'none';
+  if (esportsContentLeagues) esportsContentLeagues.innerHTML = '';
+  if (esportsContentTeams) esportsContentTeams.innerHTML = '';
+  if (esportsContentPlayers) esportsContentPlayers.innerHTML = '';
+  if (esportsContentMatches) esportsContentMatches.innerHTML = '';
+
+  if (modalJournalSection) modalJournalSection.style.display = 'none';
+  if (journalAddForm) journalAddForm.style.display = 'none';
+  if (btnToggleJournalForm) btnToggleJournalForm.textContent = '+ Thêm buổi chơi';
+  if (journalSessionsList) journalSessionsList.innerHTML = '';
+  if (inputSessionNotes) inputSessionNotes.value = '';
+
+  if (modalStudioHq) modalStudioHq.textContent = '--';
+  if (modalStudioEst) modalStudioEst.textContent = '--';
 
   // Set modal view in loading state
   gameDetailModal.classList.add('active');
@@ -295,6 +823,29 @@ export async function openGameDetails(gameId) {
       }
     }
 
+    // Render Developer Location & Established Year
+    if (modalStudioHq || modalStudioEst) {
+      let hqText = 'Không rõ';
+      let estText = 'Không rõ';
+      
+      const primaryDevName = details.developers && details.developers.length > 0 ? details.developers[0].name : null;
+      const primaryPubName = details.publishers && details.publishers.length > 0 ? details.publishers[0].name : null;
+      
+      const devInfo = lookupCompanyInfo(primaryDevName);
+      const pubInfo = lookupCompanyInfo(primaryPubName);
+      
+      if (devInfo) {
+        hqText = devInfo.location || hqText;
+        estText = devInfo.established ? `${devInfo.established}` : estText;
+      } else if (pubInfo) {
+        hqText = pubInfo.location || hqText;
+        estText = pubInfo.established ? `${pubInfo.established}` : estText;
+      }
+      
+      if (modalStudioHq) modalStudioHq.textContent = hqText;
+      if (modalStudioEst) modalStudioEst.textContent = estText;
+    }
+
     // 6. Ratings Bar Chart
     renderRatingsChart(details.ratings);
 
@@ -359,17 +910,50 @@ export async function openGameDetails(gameId) {
         }
       })
       .catch(() => {
-        // Fallback to tags-based similarity
-        if (details.tags && details.tags.length > 0) {
-          const tagIds = details.tags.slice(0, 3).map(t => t.id).join(',');
-          window.api.getSimilarGames(tagIds, 15)
+        // Fallback to genre + tags-based similarity
+        const genreIds = details.genres && details.genres.length > 0 
+          ? details.genres.map(g => g.id).join(',') 
+          : null;
+        const tagIds = details.tags && details.tags.length > 0 
+          ? details.tags.slice(0, 3).map(t => t.id).join(',') 
+          : null;
+
+        if (tagIds || genreIds) {
+          window.api.getSimilarGames(tagIds, genreIds, 15)
             .then(simData => {
-              renderSimilarGames(simData.results || []);
+              if (simData && simData.results && simData.results.length > 1) {
+                renderSimilarGames(simData.results);
+              } else if (genreIds) {
+                // If too few results, query just by genre for high-quality recommendations of the same genre
+                window.api.getSimilarGames(null, genreIds, 15)
+                  .then(genreData => {
+                    renderSimilarGames(genreData.results || []);
+                  })
+                  .catch(err => {
+                    console.error('Lỗi khi tải game tương tự bằng genre:', err);
+                    renderSimilarGames(simData.results || []);
+                  });
+              } else {
+                renderSimilarGames(simData.results || []);
+              }
             })
             .catch(err => {
-              console.error('Lỗi khi tải game tương tự bằng tag:', err);
-              if (modalSimilarContainer) {
-                modalSimilarContainer.innerHTML = '<span style="color: var(--text-muted); font-size:12px;">Không thể tải game tương tự</span>';
+              console.error('Lỗi khi tải game tương tự bằng tag & genre:', err);
+              if (genreIds) {
+                window.api.getSimilarGames(null, genreIds, 15)
+                  .then(genreData => {
+                    renderSimilarGames(genreData.results || []);
+                  })
+                  .catch(e => {
+                    console.error('Lỗi khi tải game tương tự bằng genre (catch):', e);
+                    if (modalSimilarContainer) {
+                      modalSimilarContainer.innerHTML = '<span style="color: var(--text-muted); font-size:12px;">Không thể tải game tương tự</span>';
+                    }
+                  });
+              } else {
+                if (modalSimilarContainer) {
+                  modalSimilarContainer.innerHTML = '<span style="color: var(--text-muted); font-size:12px;">Không thể tải game tương tự</span>';
+                }
               }
             });
         } else {
@@ -450,13 +1034,16 @@ export async function openGameDetails(gameId) {
       });
 
     // Fetch and render game series
-    window.api.getGameSeries(gameId, 12)
+    window.api.getGameSeries(gameId, 40)
       .then(seriesData => {
+        if (state.selectedGame) {
+          state.selectedGame.seriesGameIds = (seriesData && seriesData.results) ? seriesData.results.map(r => r.id) : [];
+        }
         if (modalSeriesSection && modalSeriesContainer) {
           modalSeriesContainer.innerHTML = '';
           if (seriesData && seriesData.results && seriesData.results.length > 0) {
             modalSeriesSection.style.display = 'block';
-            seriesData.results.forEach(ser => {
+            seriesData.results.slice(0, 12).forEach(ser => {
               const item = document.createElement('div');
               item.className = 'similar-game-card'; // Reuse identical styling
               item.style.cssText = 'width: 100px; flex-shrink: 0; cursor: pointer; position: relative;';
@@ -464,7 +1051,7 @@ export async function openGameDetails(gameId) {
 
               item.innerHTML = `
                 <div style="position: relative; width: 100px; height: 130px; border-radius: 6px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.3); border: 1px solid var(--border-glass);">
-                  <img src="${ser.background_image || 'src/css/placeholder.svg'}" style="width: 100%; height: 100%; object-fit: cover;" alt="${ser.name}">
+                   <img src="${ser.background_image || 'src/css/placeholder.svg'}" style="width: 100%; height: 100%; object-fit: cover;" alt="${ser.name}">
                 </div>
                 <div style="font-size: 11px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 4px; color: var(--text-light); text-align: center;" title="${ser.name}">${ser.name}</div>
               `;
@@ -870,6 +1457,8 @@ export async function openGameDetails(gameId) {
         if (inputCompletedDate) inputCompletedDate.value = saved.endDate || '';
         if (inputCompletedReview) inputCompletedReview.value = saved.review || '';
       }
+      
+      renderJournalSection(saved);
     } else {
       // Default placeholder fields
       if (selectGameStatus) selectGameStatus.value = 'none';
@@ -886,7 +1475,11 @@ export async function openGameDetails(gameId) {
       setModalStarRating(0);
       if (inputCompletedDate) inputCompletedDate.value = new Date().toISOString().split('T')[0];
       if (inputCompletedReview) inputCompletedReview.value = '';
+
+      if (modalJournalSection) modalJournalSection.style.display = 'none';
     }
+
+    renderEsportsSection(details);
 
   } catch (err) {
     console.error('Lỗi lấy chi tiết game:', err);
@@ -1054,6 +1647,17 @@ export function closeModal() {
 
   const existingSwitcher = document.getElementById('modal-trailers-switcher-container');
   if (existingSwitcher) existingSwitcher.remove();
+
+  // Reset Esports section
+  if (modalEsportsSection) modalEsportsSection.style.display = 'none';
+  if (esportsContentLeagues) esportsContentLeagues.innerHTML = '';
+  if (esportsContentTeams) esportsContentTeams.innerHTML = '';
+  if (esportsContentPlayers) esportsContentPlayers.innerHTML = '';
+  if (esportsContentMatches) esportsContentMatches.innerHTML = '';
+
+  // Reset Studio/Company info
+  if (modalStudioHq) modalStudioHq.textContent = '--';
+  if (modalStudioEst) modalStudioEst.textContent = '--';
 }
 
 // Save or Update Game state
@@ -1082,7 +1686,8 @@ export async function saveModalGame() {
     status: status,
     subStatus: selectGameSubstatus.value,
     platform: selectGamePlatform.value,
-    updatedAt: Date.now()
+    updatedAt: Date.now(),
+    seriesGameIds: state.selectedGame.seriesGameIds || []
   };
 
   // Add specific fields based on status
@@ -1100,9 +1705,11 @@ export async function saveModalGame() {
 
   const existingIdx = state.localGames.findIndex(g => g.id === gameId);
   if (existingIdx !== -1) {
+    gameRecord.sessions = state.localGames[existingIdx].sessions || [];
     gameRecord.createdAt = state.localGames[existingIdx].createdAt || Date.now();
     state.localGames[existingIdx] = gameRecord;
   } else {
+    gameRecord.sessions = [];
     gameRecord.createdAt = Date.now();
     state.localGames.push(gameRecord);
   }
@@ -1117,161 +1724,37 @@ export async function saveModalGame() {
     if (state.activeTab !== 'discover' && state.activeTab !== 'search' && state.activeTab !== 'dashboard') {
       renderListTab(state.activeTab);
     } else if (state.activeTab === 'discover' || state.activeTab === 'search') {
-      // Re-trigger render of current page search/discover grid to hide/update states
-      const activeTabPane = document.getElementById(`view-${state.activeTab}`);
-      if (activeTabPane) {
-        if (state.activeTab === 'search') {
-          // If we had a query, re-render cached results or trending initial
-          const query = document.getElementById('rawg-search-input').value.trim();
-          const grid = document.getElementById('search-game-grid');
-          if (grid) {
-            grid.innerHTML = '';
-            if (query === state.searchQueryCached && state.searchGamesCached) {
-              const searchResults = (state.searchGamesCached.results || []).filter(g => !state.localGames.some(lg => String(lg.id) === String(g.id)));
-              if (searchResults.length > 0) {
-                searchResults.forEach(game => {
-                  const card = document.createElement('div');
-                  card.className = `game-card glass-card`;
-                  card.addEventListener('click', () => openGameDetails(game.id));
-                  const mcScore = game.metacritic;
-                  let mcClass = '';
-                  if (mcScore) {
-                    if (mcScore < 50) mcClass = 'score-low';
-                    else if (mcScore < 75) mcClass = 'score-medium';
-                  }
-                  const mcBadge = mcScore ? `<div class="metacritic-badge ${mcClass}">${mcScore}</div>` : '';
-                  const firstGenre = game.genres && game.genres.length > 0 ? game.genres[0].name : 'RAWG Game';
-                  card.innerHTML = `
-                    <div class="game-card-img-container">
-                      <img class="game-card-img" src="${game.background_image || 'src/css/placeholder.svg'}" alt="${game.name}">
-                      ${mcBadge}
-                    </div>
-                    <div class="game-card-info">
-                      <div>
-                        <h4 class="game-card-title">${game.name}</h4>
-                        <div class="game-card-subtitle">
-                          <span>${firstGenre}</span>
-                          <span>${game.released ? game.released.substring(0, 4) : '--'}</span>
-                        </div>
-                      </div>
-                    </div>
-                  `;
-                  grid.appendChild(card);
-                });
-              } else {
-                grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-muted); font-size:14px;">Không tìm thấy game nào phù hợp.</div>`;
-              }
-            } else if (!query && state.popularGamesCached) {
-              const popResults = (state.popularGamesCached.results || []).filter(g => !state.localGames.some(lg => String(lg.id) === String(g.id)));
-              popResults.forEach(game => {
-                const card = document.createElement('div');
-                card.className = `game-card glass-card`;
-                card.addEventListener('click', () => openGameDetails(game.id));
-                const mcScore = game.metacritic;
-                let mcClass = '';
-                if (mcScore) {
-                  if (mcScore < 50) mcClass = 'score-low';
-                  else if (mcScore < 75) mcClass = 'score-medium';
-                }
-                const mcBadge = mcScore ? `<div class="metacritic-badge ${mcClass}">${mcScore}</div>` : '';
-                const firstGenre = game.genres && game.genres.length > 0 ? game.genres[0].name : 'RAWG Game';
-                card.innerHTML = `
-                  <div class="game-card-img-container">
-                    <img class="game-card-img" src="${game.background_image || 'src/css/placeholder.svg'}" alt="${game.name}">
-                    ${mcBadge}
-                  </div>
-                  <div class="game-card-info">
-                    <div>
-                      <h4 class="game-card-title">${game.name}</h4>
-                      <div class="game-card-subtitle">
-                        <span>${firstGenre}</span>
-                        <span>${game.released ? game.released.substring(0, 4) : '--'}</span>
-                      </div>
-                    </div>
-                  </div>
-                `;
-                grid.appendChild(card);
-              });
-            }
-          }
-        } else if (state.activeTab === 'discover') {
-          // Re-render Discover Trending and Upcoming grids
-          const trendingGrid = document.getElementById('discover-trending-grid');
-          const upcomingGrid = document.getElementById('discover-upcoming-grid');
-          
-          if (trendingGrid && state.trendingGamesCached) {
-            trendingGrid.innerHTML = '';
-            const tResults = (state.trendingGamesCached.results || []).filter(g => !state.localGames.some(lg => String(lg.id) === String(g.id)));
-            tResults.forEach(game => {
-              const card = document.createElement('div');
-              card.className = `game-card glass-card`;
-              card.addEventListener('click', () => openGameDetails(game.id));
-              const mcScore = game.metacritic;
-              let mcClass = '';
-              if (mcScore) {
-                if (mcScore < 50) mcClass = 'score-low';
-                else if (mcScore < 75) mcClass = 'score-medium';
-              }
-              const mcBadge = mcScore ? `<div class="metacritic-badge ${mcClass}">${mcScore}</div>` : '';
-              const firstGenre = game.genres && game.genres.length > 0 ? game.genres[0].name : 'RAWG Game';
-              card.innerHTML = `
-                <div class="game-card-img-container">
-                  <img class="game-card-img" src="${game.background_image || 'src/css/placeholder.svg'}" alt="${game.name}">
-                  ${mcBadge}
-                </div>
-                <div class="game-card-info">
-                  <div>
-                    <h4 class="game-card-title">${game.name}</h4>
-                    <div class="game-card-subtitle">
-                      <span>${firstGenre}</span>
-                      <span>${game.released ? game.released.substring(0, 4) : '--'}</span>
-                    </div>
-                  </div>
-                </div>
-              `;
-              trendingGrid.appendChild(card);
-            });
-          }
-
-          if (upcomingGrid && state.upcomingGamesCached) {
-            upcomingGrid.innerHTML = '';
-            const uResults = (state.upcomingGamesCached.results || []).filter(g => !state.localGames.some(lg => String(lg.id) === String(g.id)));
-            uResults.forEach(game => {
-              const card = document.createElement('div');
-              card.className = `game-card glass-card`;
-              card.addEventListener('click', () => openGameDetails(game.id));
-              const mcScore = game.metacritic;
-              let mcClass = '';
-              if (mcScore) {
-                if (mcScore < 50) mcClass = 'score-low';
-                else if (mcScore < 75) mcClass = 'score-medium';
-              }
-              const mcBadge = mcScore ? `<div class="metacritic-badge ${mcClass}">${mcScore}</div>` : '';
-              const firstGenre = game.genres && game.genres.length > 0 ? game.genres[0].name : 'RAWG Game';
-              card.innerHTML = `
-                <div class="game-card-img-container">
-                  <img class="game-card-img" src="${game.background_image || 'src/css/placeholder.svg'}" alt="${game.name}">
-                  ${mcBadge}
-                </div>
-                <div class="game-card-info">
-                  <div>
-                    <h4 class="game-card-title">${game.name}</h4>
-                    <div class="game-card-subtitle">
-                      <span>${firstGenre}</span>
-                      <span>${game.released ? game.released.substring(0, 4) : '--'}</span>
-                    </div>
-                  </div>
-                </div>
-              `;
-              upcomingGrid.appendChild(card);
-            });
-          }
+      if (state.activeTab === 'search') {
+        if (state.searchGamesBuffer) {
+          const filtered = state.searchGamesBuffer.filter(game => !state.localGames.some(g => String(g.id) === String(game.id)));
+          const pageResults = filtered.slice((state.searchPage - 1) * 15, state.searchPage * 15);
+          renderRawgSearchResults(pageResults);
+        }
+      } else if (state.activeTab === 'discover') {
+        const trendingGrid = document.getElementById('discover-trending-grid');
+        const upcomingGrid = document.getElementById('discover-upcoming-grid');
+        const browseResultsGrid = document.getElementById('browse-results-grid');
+        
+        if (trendingGrid && state.trendingGamesBuffer) {
+          const filtered = state.trendingGamesBuffer.filter(game => !state.localGames.some(g => String(g.id) === String(game.id)));
+          const pageResults = filtered.slice((state.trendingPage - 1) * 15, state.trendingPage * 15);
+          renderDiscoverResults(pageResults, trendingGrid);
+        }
+        if (upcomingGrid && state.upcomingGamesBuffer) {
+          const filtered = state.upcomingGamesBuffer.filter(game => !state.localGames.some(g => String(g.id) === String(game.id)));
+          const pageResults = filtered.slice((state.upcomingPage - 1) * 15, state.upcomingPage * 15);
+          renderDiscoverResults(pageResults, upcomingGrid);
+        }
+        if (browseResultsGrid && state.browseGamesBuffer) {
+          const filtered = state.browseGamesBuffer.filter(game => !state.localGames.some(g => String(g.id) === String(game.id)));
+          const pageResults = filtered.slice((state.browsePage - 1) * 15, state.browsePage * 15);
+          renderDiscoverResults(pageResults, browseResultsGrid);
         }
       }
     }
     closeModal();
   } else {
-    alert('Lỗi khi lưu game vào cơ sở dữ liệu cục bộ!');
+    showAlert('Lỗi', 'Lỗi khi lưu game vào cơ sở dữ liệu cục bộ!', 'error');
   }
 }
 
@@ -1284,7 +1767,7 @@ export async function deleteModalGame(silent = false) {
 
   if (existingIdx !== -1) {
     if (!silent) {
-      const confirmDelete = confirm(`Bạn có chắc muốn xóa "${state.selectedGame.name}" khỏi thư viện?`);
+      const confirmDelete = await showConfirm('Xác nhận xóa', `Bạn có chắc muốn xóa "${state.selectedGame.name}" khỏi thư viện?`);
       if (!confirmDelete) return;
     }
 
@@ -1298,12 +1781,221 @@ export async function deleteModalGame(silent = false) {
       // Refresh library tab if we are currently inside library view
       if (state.activeTab !== 'discover' && state.activeTab !== 'search' && state.activeTab !== 'dashboard') {
         renderListTab(state.activeTab);
+      } else if (state.activeTab === 'discover' || state.activeTab === 'search') {
+        if (state.activeTab === 'search') {
+          if (state.searchGamesBuffer) {
+            const filtered = state.searchGamesBuffer.filter(game => !state.localGames.some(g => String(g.id) === String(game.id)));
+            const pageResults = filtered.slice((state.searchPage - 1) * 15, state.searchPage * 15);
+            renderRawgSearchResults(pageResults);
+          }
+        } else if (state.activeTab === 'discover') {
+          const trendingGrid = document.getElementById('discover-trending-grid');
+          const upcomingGrid = document.getElementById('discover-upcoming-grid');
+          const browseResultsGrid = document.getElementById('browse-results-grid');
+          
+          if (trendingGrid && state.trendingGamesBuffer) {
+            const filtered = state.trendingGamesBuffer.filter(game => !state.localGames.some(g => String(g.id) === String(game.id)));
+            const pageResults = filtered.slice((state.trendingPage - 1) * 15, state.trendingPage * 15);
+            renderDiscoverResults(pageResults, trendingGrid);
+          }
+          if (upcomingGrid && state.upcomingGamesBuffer) {
+            const filtered = state.upcomingGamesBuffer.filter(game => !state.localGames.some(g => String(g.id) === String(game.id)));
+            const pageResults = filtered.slice((state.upcomingPage - 1) * 15, state.upcomingPage * 15);
+            renderDiscoverResults(pageResults, upcomingGrid);
+          }
+          if (browseResultsGrid && state.browseGamesBuffer) {
+            const filtered = state.browseGamesBuffer.filter(game => !state.localGames.some(g => String(g.id) === String(game.id)));
+            const pageResults = filtered.slice((state.browsePage - 1) * 15, state.browsePage * 15);
+            renderDiscoverResults(pageResults, browseResultsGrid);
+          }
+        }
       }
       closeModal();
     } else {
-      alert('Lỗi khi cập nhật cơ sở dữ liệu!');
+      showAlert('Lỗi', 'Lỗi khi cập nhật cơ sở dữ liệu!', 'error');
     }
   } else {
     closeModal();
   }
 }
+
+// Render Journal section in Modal
+export function renderJournalSection(game) {
+  if (!modalJournalSection || !journalSessionsList) return;
+
+  modalJournalSection.style.display = 'block';
+  journalSessionsList.innerHTML = '';
+
+  const sessions = game.sessions || [];
+  if (sessions.length === 0) {
+    journalSessionsList.innerHTML = `
+      <div style="font-size: 12px; color: var(--text-muted); text-align: center; padding: 16px; border: 1.5px dashed var(--border-glass); border-radius: 8px; background: rgba(0,0,0,0.15);">
+        Chưa có nhật ký chơi game nào được ghi nhận. Hãy nhấn nút "+ Thêm buổi chơi" để ghi lại buổi chơi đầu tiên của bạn!
+      </div>
+    `;
+    return;
+  }
+
+  // Sort sessions by date (newest first)
+  const sortedSessions = [...sessions].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+  journalSessionsList.innerHTML = sortedSessions.map((s, index) => {
+    // Format date beautifully (DD/MM/YYYY)
+    let formattedDate = s.date;
+    try {
+      const parts = s.date.split('-');
+      if (parts.length === 3) {
+        formattedDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
+      }
+    } catch(e) {}
+
+    return `
+      <div class="journal-session-card">
+        <div class="session-left">
+          <div class="session-meta-row">
+            <span class="session-hours-badge">+${parseFloat(s.hours || 0).toFixed(1)}h</span>
+            <span>Ngày chơi: <strong>${formattedDate}</strong></span>
+          </div>
+          <p class="session-notes">${s.notes ? s.notes.replace(/\r?\n/g, '<br>') : 'Không ghi chú.'}</p>
+        </div>
+        <button class="btn-delete-session" data-index="${index}" title="Xóa nhật ký chơi này">
+          <svg viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+        </button>
+      </div>
+    `;
+  }).join('');
+
+  // Bind delete session event listeners
+  journalSessionsList.querySelectorAll('.btn-delete-session').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const sortedIdx = parseInt(btn.getAttribute('data-index'));
+      const targetSession = sortedSessions[sortedIdx];
+      
+      // Find original index in game.sessions array
+      const originalIdx = game.sessions.findIndex(s => s === targetSession);
+      if (originalIdx !== -1) {
+        const confirmDelete = await showConfirm('Xác nhận xóa', 'Bạn có chắc chắn muốn xóa nhật ký buổi chơi này?');
+        if (!confirmDelete) return;
+
+        const removed = game.sessions.splice(originalIdx, 1)[0];
+
+        // Deduct hours from total playing playtime
+        game.playingHours = Math.max(0, parseFloat(game.playingHours || 0) - parseFloat(removed.hours || 0));
+        game.updatedAt = Date.now();
+
+        // Save
+        const success = await saveGames(state.localGames);
+        if (success) {
+          // Update total hours field in modal input if present and game is currently in playing status
+          if (inputPlayingHours && game.status === 'playing') {
+            inputPlayingHours.value = game.playingHours.toFixed(1);
+          }
+          
+          // Re-render journal
+          renderJournalSection(game);
+          
+          // Update library and dashboard statistics
+          updateLibraryStats();
+          renderDashboard();
+          
+          // Refresh list tab if active
+          if (state.activeTab !== 'discover' && state.activeTab !== 'search' && state.activeTab !== 'dashboard') {
+            renderListTab(state.activeTab);
+          }
+        }
+      }
+    });
+  });
+}
+
+// Bind Journal form events
+if (btnToggleJournalForm) {
+  btnToggleJournalForm.addEventListener('click', () => {
+    if (journalAddForm.style.display === 'none') {
+      journalAddForm.style.display = 'block';
+      inputSessionDate.value = new Date().toISOString().split('T')[0];
+      inputSessionHours.value = '1.0';
+      inputSessionNotes.value = '';
+      btnToggleJournalForm.textContent = 'Đóng form';
+      inputSessionNotes.focus();
+    } else {
+      journalAddForm.style.display = 'none';
+      btnToggleJournalForm.textContent = '+ Thêm buổi chơi';
+    }
+  });
+}
+
+if (btnCancelSession) {
+  btnCancelSession.addEventListener('click', () => {
+    journalAddForm.style.display = 'none';
+    if (btnToggleJournalForm) btnToggleJournalForm.textContent = '+ Thêm buổi chơi';
+  });
+}
+
+if (btnSaveSession) {
+  btnSaveSession.addEventListener('click', async () => {
+    if (!state.selectedGame) return;
+    const game = state.localGames.find(g => g.id === state.selectedGame.id);
+    if (!game) {
+      showAlert('Thông báo', 'Vui lòng lưu game vào thư viện trước khi ghi nhận nhật ký buổi chơi!', 'info');
+      return;
+    }
+
+    const dateVal = inputSessionDate.value || new Date().toISOString().split('T')[0];
+    const hoursVal = parseFloat(inputSessionHours.value) || 0;
+    const notesVal = inputSessionNotes.value.trim();
+
+    if (hoursVal <= 0) {
+      showAlert('Cảnh báo', 'Số giờ chơi phải lớn hơn 0!', 'error');
+      return;
+    }
+
+    // Initialize sessions array if not present
+    game.sessions = game.sessions || [];
+    game.sessions.push({
+      date: dateVal,
+      hours: hoursVal,
+      notes: notesVal
+    });
+
+    // Accumulate total playtime
+    game.playingHours = parseFloat(game.playingHours || 0) + hoursVal;
+    game.updatedAt = Date.now();
+
+    // If game is in backlog, automatically transition to playing
+    if (game.status === 'backlog') {
+      game.status = 'playing';
+      game.startDate = dateVal;
+      if (selectGameStatus) selectGameStatus.value = 'playing';
+      updateModalFieldsVisibility('playing');
+    }
+
+    // Save
+    const success = await saveGames(state.localGames);
+    if (success) {
+      // Hide form
+      journalAddForm.style.display = 'none';
+      if (btnToggleJournalForm) btnToggleJournalForm.textContent = '+ Thêm buổi chơi';
+
+      // Update total hours field in modal input if present and game is currently in playing status
+      if (inputPlayingHours && game.status === 'playing') {
+        inputPlayingHours.value = game.playingHours.toFixed(1);
+      }
+
+      // Re-render journal
+      renderJournalSection(game);
+
+      // Update library and dashboard statistics
+      updateLibraryStats();
+      renderDashboard();
+
+      // Refresh list tab if active
+      if (state.activeTab !== 'discover' && state.activeTab !== 'search' && state.activeTab !== 'dashboard') {
+        renderListTab(state.activeTab);
+      }
+    } else {
+      showAlert('Lỗi', 'Lỗi khi lưu nhật ký chơi game!', 'error');
+    }
+  });
+}
+

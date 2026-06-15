@@ -1,16 +1,15 @@
 // Component: Discover tab rendering (trending, upcoming, genre browser, tag cloud)
 
 import { state } from '../state.js';
+import { renderPagination } from './pagination.js';
 
 // DOM Elements – Trending & Upcoming
 const discoverTrendingGrid = document.getElementById('discover-trending-grid');
 const discoverUpcomingGrid = document.getElementById('discover-upcoming-grid');
 const discoverTrendingLoading = document.getElementById('discover-trending-loading');
 const discoverUpcomingLoading = document.getElementById('discover-upcoming-loading');
-const btnTrendingLoadMore = document.getElementById('btn-trending-load-more');
-const btnUpcomingLoadMore = document.getElementById('btn-upcoming-load-more');
-const trendingLoadMoreContainer = document.getElementById('trending-load-more-container');
-const upcomingLoadMoreContainer = document.getElementById('upcoming-load-more-container');
+const trendingPaginationContainer = document.getElementById('trending-pagination-container');
+const upcomingPaginationContainer = document.getElementById('upcoming-pagination-container');
 
 // DOM Elements – Genre Browser
 const genresLoading = document.getElementById('genres-loading');
@@ -34,16 +33,15 @@ const browseResultsTitle = document.getElementById('browse-results-title');
 const browseResultsDesc = document.getElementById('browse-results-desc');
 const browseResultsLoading = document.getElementById('browse-results-loading');
 const browseResultsGrid = document.getElementById('browse-results-grid');
-const browseLoadMoreContainer = document.getElementById('browse-load-more-container');
-const btnBrowseLoadMore = document.getElementById('btn-browse-load-more');
+const browsePaginationContainer = document.getElementById('browse-pagination-container');
 const btnBrowseBack = document.getElementById('btn-browse-back');
 
 // ─── Render Discover Tab ─────────────────────────────────────────────────────
 export async function renderDiscoverTab() {
   if (discoverTrendingGrid) discoverTrendingGrid.innerHTML = '';
   if (discoverUpcomingGrid) discoverUpcomingGrid.innerHTML = '';
-  if (trendingLoadMoreContainer) trendingLoadMoreContainer.classList.add('hidden');
-  if (upcomingLoadMoreContainer) upcomingLoadMoreContainer.classList.add('hidden');
+  if (trendingPaginationContainer) trendingPaginationContainer.style.display = 'none';
+  if (upcomingPaginationContainer) upcomingPaginationContainer.style.display = 'none';
 
   // Reset browse state whenever tab is switched
   if (browseResultsSection) browseResultsSection.style.display = 'none';
@@ -55,6 +53,21 @@ export async function renderDiscoverTab() {
   state.browseCreatorId = null;
   state.browseGamesCached = null;
   state.browsePage = 1;
+  state.trendingPage = 1;
+  state.upcomingPage = 1;
+  state.trendingGamesCached = null;
+  state.upcomingGamesCached = null;
+
+  // Reset pagination buffers
+  state.trendingGamesBuffer = null;
+  state.trendingApiPage = 0;
+  state.trendingTotalCount = 0;
+  state.upcomingGamesBuffer = null;
+  state.upcomingApiPage = 0;
+  state.upcomingTotalCount = 0;
+  state.browseGamesBuffer = null;
+  state.browseApiPage = 0;
+  state.browseTotalCount = 0;
 
   if (!state.appConfig.apiKey) {
     const errorHtml = `
@@ -375,6 +388,98 @@ async function loadBrowseDetails() {
   }
 }
 
+// ─── Buffer Helpers ──────────────────────────────────────────────────────────
+async function fillTrendingBuffer(targetLength) {
+  if (!state.trendingGamesBuffer) {
+    state.trendingGamesBuffer = [];
+    state.trendingApiPage = 0;
+    state.trendingTotalCount = 0;
+  }
+  const getFilteredLength = () => state.trendingGamesBuffer.filter(game => !state.localGames.some(g => String(g.id) === String(game.id))).length;
+  if (getFilteredLength() >= targetLength) {
+    return;
+  }
+  let attempts = 0;
+  while (getFilteredLength() < targetLength && attempts < 5) {
+    state.trendingApiPage++;
+    attempts++;
+    const data = await window.api.getTrendingGames(state.trendingApiPage, 40);
+    state.trendingTotalCount = data.count;
+    if (!data.results || data.results.length === 0) {
+      break;
+    }
+    state.trendingGamesBuffer.push(...data.results);
+    if (data.results.length < 40) {
+      break;
+    }
+  }
+}
+
+async function fillUpcomingBuffer(targetLength) {
+  if (!state.upcomingGamesBuffer) {
+    state.upcomingGamesBuffer = [];
+    state.upcomingApiPage = 0;
+    state.upcomingTotalCount = 0;
+  }
+  const getFilteredLength = () => state.upcomingGamesBuffer.filter(game => !state.localGames.some(g => String(g.id) === String(game.id))).length;
+  if (getFilteredLength() >= targetLength) {
+    return;
+  }
+  let attempts = 0;
+  while (getFilteredLength() < targetLength && attempts < 5) {
+    state.upcomingApiPage++;
+    attempts++;
+    const data = await window.api.getUpcomingGames(state.upcomingApiPage, 40);
+    state.upcomingTotalCount = data.count;
+    if (!data.results || data.results.length === 0) {
+      break;
+    }
+    state.upcomingGamesBuffer.push(...data.results);
+    if (data.results.length < 40) {
+      break;
+    }
+  }
+}
+
+async function fillBrowseBuffer(targetLength) {
+  if (!state.browseGamesBuffer) {
+    state.browseGamesBuffer = [];
+    state.browseApiPage = 0;
+    state.browseTotalCount = 0;
+  }
+  const getFilteredLength = () => state.browseGamesBuffer.filter(game => !state.localGames.some(g => String(g.id) === String(game.id))).length;
+  if (getFilteredLength() >= targetLength) {
+    return;
+  }
+  let attempts = 0;
+  while (getFilteredLength() < targetLength && attempts < 5) {
+    state.browseApiPage++;
+    attempts++;
+    
+    let data = null;
+    if (state.browseMode === 'genre' && state.browseGenreId) {
+      data = await window.api.getGamesByGenre(state.browseGenreId, state.browseApiPage, 40);
+    } else if (state.browseMode === 'tag' && state.browseTagId) {
+      data = await window.api.getGamesByTag(state.browseTagId, state.browseApiPage, 40);
+    } else if (state.browseMode === 'developer' && state.browseDeveloperId) {
+      data = await window.api.getGamesByDeveloper(state.browseDeveloperId, state.browseApiPage, 40);
+    } else if (state.browseMode === 'creator' && state.browseCreatorId) {
+      data = await window.api.getGamesByCreator(state.browseCreatorId, state.browseApiPage, 40);
+    }
+    
+    if (!data) break;
+    
+    state.browseTotalCount = data.count;
+    if (!data.results || data.results.length === 0) {
+      break;
+    }
+    state.browseGamesBuffer.push(...data.results);
+    if (data.results.length < 40) {
+      break;
+    }
+  }
+}
+
 async function showBrowseResults(reset = false) {
   if (!browseResultsSection || !browseResultsGrid) return;
 
@@ -382,14 +487,18 @@ async function showBrowseResults(reset = false) {
   browseResultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
   if (reset) {
-    browseResultsGrid.innerHTML = '';
-    if (browseLoadMoreContainer) browseLoadMoreContainer.style.display = 'none';
+    state.browsePage = 1;
+    state.browseGamesBuffer = null;
+    state.browseApiPage = 0;
+    state.browseTotalCount = 0;
     if (browseResultsDesc) {
       browseResultsDesc.style.display = 'none';
       browseResultsDesc.innerHTML = '';
     }
   }
 
+  browseResultsGrid.innerHTML = ''; // Clear results for pagination
+  if (browsePaginationContainer) browsePaginationContainer.style.display = 'none';
   if (browseResultsLoading) browseResultsLoading.style.display = 'flex';
 
   if (reset) {
@@ -397,27 +506,22 @@ async function showBrowseResults(reset = false) {
   }
 
   try {
-    let data;
-    if (state.browseMode === 'genre' && state.browseGenreId) {
-      data = await window.api.getGamesByGenre(state.browseGenreId, state.browsePage);
-    } else if (state.browseMode === 'tag' && state.browseTagId) {
-      data = await window.api.getGamesByTag(state.browseTagId, state.browsePage);
-    } else if (state.browseMode === 'developer' && state.browseDeveloperId) {
-      data = await window.api.getGamesByDeveloper(state.browseDeveloperId, state.browsePage);
-    } else if (state.browseMode === 'creator' && state.browseCreatorId) {
-      data = await window.api.getGamesByCreator(state.browseCreatorId, state.browsePage);
-    }
+    const targetLength = state.browsePage * 15;
+    await fillBrowseBuffer(targetLength);
 
     if (browseResultsLoading) browseResultsLoading.style.display = 'none';
 
-    if (data && data.results) {
-      state.browseGamesCached = data;
-      const rendered = renderDiscoverResults(data.results, browseResultsGrid, !reset);
-      if (data.next && rendered > 0) {
-        if (browseLoadMoreContainer) browseLoadMoreContainer.style.display = 'block';
-      } else {
-        if (browseLoadMoreContainer) browseLoadMoreContainer.style.display = 'none';
-      }
+    if (state.browseGamesBuffer) {
+      const filtered = state.browseGamesBuffer.filter(game => !state.localGames.some(g => String(g.id) === String(game.id)));
+      const pageResults = filtered.slice((state.browsePage - 1) * 15, state.browsePage * 15);
+      const rendered = renderDiscoverResults(pageResults, browseResultsGrid, false);
+      
+      // Render pagination controls
+      renderPagination(browsePaginationContainer, state.browsePage, state.browseTotalCount, async (newPage) => {
+        state.browsePage = newPage;
+        await showBrowseResults(false);
+      });
+
       if (rendered === 0 && reset) {
         browseResultsGrid.innerHTML = `<div style="grid-column: 1/-1; color: var(--text-muted); font-size:13px; padding: 20px 0;">Không có game nào phù hợp.</div>`;
       }
@@ -429,82 +533,68 @@ async function showBrowseResults(reset = false) {
   }
 }
 
-export async function loadMoreBrowse() {
-  state.browsePage++;
-  if (btnBrowseLoadMore) {
-    btnBrowseLoadMore.disabled = true;
-    btnBrowseLoadMore.textContent = 'Đang tải...';
-  }
-  try {
-    await showBrowseResults(false);
-  } finally {
-    if (btnBrowseLoadMore) {
-      btnBrowseLoadMore.disabled = false;
-      btnBrowseLoadMore.textContent = 'Xem thêm';
-    }
-  }
-}
-
 // ─── Trending ────────────────────────────────────────────────────────────────
 async function renderTrending() {
-  if (state.trendingGamesCached) {
+  if (discoverTrendingLoading) discoverTrendingLoading.classList.remove('hidden');
+  if (discoverTrendingGrid) discoverTrendingGrid.classList.add('hidden');
+  if (trendingPaginationContainer) trendingPaginationContainer.style.display = 'none';
+
+  try {
+    const targetLength = state.trendingPage * 15;
+    await fillTrendingBuffer(targetLength);
+    
     if (discoverTrendingLoading) discoverTrendingLoading.classList.add('hidden');
-    if (discoverTrendingGrid) discoverTrendingGrid.classList.remove('hidden');
-    const rendered = renderDiscoverResults(state.trendingGamesCached.results, discoverTrendingGrid);
-    if (state.trendingGamesCached.next && rendered > 0) {
-      if (trendingLoadMoreContainer) trendingLoadMoreContainer.classList.remove('hidden');
+    if (discoverTrendingGrid) {
+      discoverTrendingGrid.classList.remove('hidden');
+      const filtered = state.trendingGamesBuffer.filter(game => !state.localGames.some(g => String(g.id) === String(game.id)));
+      const pageResults = filtered.slice((state.trendingPage - 1) * 15, state.trendingPage * 15);
+      renderDiscoverResults(pageResults, discoverTrendingGrid);
+      
+      // Render pagination controls
+      renderPagination(trendingPaginationContainer, state.trendingPage, state.trendingTotalCount, async (newPage) => {
+        state.trendingPage = newPage;
+        await renderTrending();
+      });
     }
-  } else {
-    if (discoverTrendingLoading) discoverTrendingLoading.classList.remove('hidden');
-    if (discoverTrendingGrid) discoverTrendingGrid.classList.add('hidden');
-    try {
-      const data = await window.api.getTrendingGames(1);
-      state.trendingGamesCached = data;
-      if (discoverTrendingLoading) discoverTrendingLoading.classList.add('hidden');
-      if (discoverTrendingGrid) {
-        discoverTrendingGrid.classList.remove('hidden');
-        const rendered = renderDiscoverResults(data.results, discoverTrendingGrid);
-        if (data.next && rendered > 0) {
-          if (trendingLoadMoreContainer) trendingLoadMoreContainer.classList.remove('hidden');
-        }
-      }
-    } catch (err) {
-      console.error('Lỗi tải game hot:', err);
-      if (discoverTrendingGrid) {
-        discoverTrendingGrid.innerHTML = `<div style="grid-column: 1/-1; color: var(--accent-danger); font-size: 13px;">⚠️ Lỗi tải dữ liệu: ${err.message}</div>`;
-      }
+  } catch (err) {
+    console.error('Lỗi tải game hot:', err);
+    if (discoverTrendingLoading) discoverTrendingLoading.classList.add('hidden');
+    if (discoverTrendingGrid) {
+      discoverTrendingGrid.classList.remove('hidden');
+      discoverTrendingGrid.innerHTML = `<div style="grid-column: 1/-1; color: var(--accent-danger); font-size: 13px;">⚠️ Lỗi tải dữ liệu: ${err.message}</div>`;
     }
   }
 }
 
 // ─── Upcoming ─────────────────────────────────────────────────────────────────
 async function renderUpcoming() {
-  if (state.upcomingGamesCached) {
+  if (discoverUpcomingLoading) discoverUpcomingLoading.classList.remove('hidden');
+  if (discoverUpcomingGrid) discoverUpcomingGrid.classList.add('hidden');
+  if (upcomingPaginationContainer) upcomingPaginationContainer.style.display = 'none';
+
+  try {
+    const targetLength = state.upcomingPage * 15;
+    await fillUpcomingBuffer(targetLength);
+    
     if (discoverUpcomingLoading) discoverUpcomingLoading.classList.add('hidden');
-    if (discoverUpcomingGrid) discoverUpcomingGrid.classList.remove('hidden');
-    const rendered = renderDiscoverResults(state.upcomingGamesCached.results, discoverUpcomingGrid);
-    if (state.upcomingGamesCached.next && rendered > 0) {
-      if (upcomingLoadMoreContainer) upcomingLoadMoreContainer.classList.remove('hidden');
+    if (discoverUpcomingGrid) {
+      discoverUpcomingGrid.classList.remove('hidden');
+      const filtered = state.upcomingGamesBuffer.filter(game => !state.localGames.some(g => String(g.id) === String(game.id)));
+      const pageResults = filtered.slice((state.upcomingPage - 1) * 15, state.upcomingPage * 15);
+      renderDiscoverResults(pageResults, discoverUpcomingGrid);
+      
+      // Render pagination controls
+      renderPagination(upcomingPaginationContainer, state.upcomingPage, state.upcomingTotalCount, async (newPage) => {
+        state.upcomingPage = newPage;
+        await renderUpcoming();
+      });
     }
-  } else {
-    if (discoverUpcomingLoading) discoverUpcomingLoading.classList.remove('hidden');
-    if (discoverUpcomingGrid) discoverUpcomingGrid.classList.add('hidden');
-    try {
-      const data = await window.api.getUpcomingGames(1);
-      state.upcomingGamesCached = data;
-      if (discoverUpcomingLoading) discoverUpcomingLoading.classList.add('hidden');
-      if (discoverUpcomingGrid) {
-        discoverUpcomingGrid.classList.remove('hidden');
-        const rendered = renderDiscoverResults(data.results, discoverUpcomingGrid);
-        if (data.next && rendered > 0) {
-          if (upcomingLoadMoreContainer) upcomingLoadMoreContainer.classList.remove('hidden');
-        }
-      }
-    } catch (err) {
-      console.error('Lỗi tải game sắp ra mắt:', err);
-      if (discoverUpcomingGrid) {
-        discoverUpcomingGrid.innerHTML = `<div style="grid-column: 1/-1; color: var(--accent-danger); font-size: 13px;">⚠️ Lỗi tải dữ liệu: ${err.message}</div>`;
-      }
+  } catch (err) {
+    console.error('Lỗi tải game sắp ra mắt:', err);
+    if (discoverUpcomingLoading) discoverUpcomingLoading.classList.add('hidden');
+    if (discoverUpcomingGrid) {
+      discoverUpcomingGrid.classList.remove('hidden');
+      discoverUpcomingGrid.innerHTML = `<div style="grid-column: 1/-1; color: var(--accent-danger); font-size: 13px;">⚠️ Lỗi tải dữ liệu: ${err.message}</div>`;
     }
   }
 }
@@ -555,73 +645,4 @@ export function renderDiscoverResults(results, targetGrid, append = false) {
   });
   
   return filteredResults.length;
-}
-
-// ─── Load More handlers ───────────────────────────────────────────────────────
-export async function loadMoreTrending() {
-  state.trendingPage++;
-  if (btnTrendingLoadMore) {
-    btnTrendingLoadMore.disabled = true;
-    btnTrendingLoadMore.textContent = 'Đang tải...';
-  }
-  try {
-    const data = await window.api.getTrendingGames(state.trendingPage);
-    if (data && data.results && data.results.length > 0) {
-      if (state.trendingGamesCached) {
-        state.trendingGamesCached.results.push(...data.results);
-        state.trendingGamesCached.next = data.next;
-      }
-      const rendered = renderDiscoverResults(data.results, discoverTrendingGrid, true);
-      if (rendered === 0 && data.next) {
-        await loadMoreTrending();
-        return;
-      }
-      if (!data.next) {
-        if (trendingLoadMoreContainer) trendingLoadMoreContainer.classList.add('hidden');
-      }
-    } else {
-      if (trendingLoadMoreContainer) trendingLoadMoreContainer.classList.add('hidden');
-    }
-  } catch (err) {
-    console.error('Lỗi tải thêm game hot:', err);
-  } finally {
-    if (btnTrendingLoadMore) {
-      btnTrendingLoadMore.disabled = false;
-      btnTrendingLoadMore.textContent = 'Xem thêm';
-    }
-  }
-}
-
-export async function loadMoreUpcoming() {
-  state.upcomingPage++;
-  if (btnUpcomingLoadMore) {
-    btnUpcomingLoadMore.disabled = true;
-    btnUpcomingLoadMore.textContent = 'Đang tải...';
-  }
-  try {
-    const data = await window.api.getUpcomingGames(state.upcomingPage);
-    if (data && data.results && data.results.length > 0) {
-      if (state.upcomingGamesCached) {
-        state.upcomingGamesCached.results.push(...data.results);
-        state.upcomingGamesCached.next = data.next;
-      }
-      const rendered = renderDiscoverResults(data.results, discoverUpcomingGrid, true);
-      if (rendered === 0 && data.next) {
-        await loadMoreUpcoming();
-        return;
-      }
-      if (!data.next) {
-        if (upcomingLoadMoreContainer) upcomingLoadMoreContainer.classList.add('hidden');
-      }
-    } else {
-      if (upcomingLoadMoreContainer) upcomingLoadMoreContainer.classList.add('hidden');
-    }
-  } catch (err) {
-    console.error('Lỗi tải thêm game sắp ra mắt:', err);
-  } finally {
-    if (btnUpcomingLoadMore) {
-      btnUpcomingLoadMore.disabled = false;
-      btnUpcomingLoadMore.textContent = 'Xem thêm';
-    }
-  }
 }

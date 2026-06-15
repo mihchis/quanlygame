@@ -5,12 +5,13 @@ contextBridge.exposeInMainWorld('api', {
   saveConfig: (config) => ipcRenderer.invoke('save-config', config),
   getGames: () => ipcRenderer.invoke('get-games'),
   saveGames: (games) => ipcRenderer.invoke('save-games', games),
+  getFirebaseConfig: () => ipcRenderer.invoke('get-firebase-config'),
   
   // RAWG API helpers
-  searchGames: (query, page = 1) => ipcRenderer.invoke('fetch-rawg', 'games', { 
+  searchGames: (query, page = 1, pageSize = 15) => ipcRenderer.invoke('fetch-rawg', 'games', { 
     search: query, 
     page: page,
-    page_size: 15
+    page_size: pageSize
   }),
   getGameDetails: (id) => ipcRenderer.invoke('fetch-rawg', `games/${id}`),
   getGameScreenshots: (id) => ipcRenderer.invoke('fetch-rawg', `games/${id}/screenshots`),
@@ -38,12 +39,14 @@ contextBridge.exposeInMainWorld('api', {
       page_size: pageSize
     });
   },
-  getSimilarGames: (tags, pageSize = 8) => {
-    return ipcRenderer.invoke('fetch-rawg', 'games', {
-      tags: tags,
+  getSimilarGames: (tags, genres, pageSize = 8) => {
+    const params = {
       ordering: '-added',
       page_size: pageSize
-    });
+    };
+    if (tags) params.tags = tags;
+    if (genres) params.genres = genres;
+    return ipcRenderer.invoke('fetch-rawg', 'games', params);
   },
   getGameAdditions: (id, pageSize = 8) => {
     return ipcRenderer.invoke('fetch-rawg', `games/${id}/additions`, {

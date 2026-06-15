@@ -164,19 +164,20 @@ export function renderListTab(status) {
     return;
   }
 
-  filtered.forEach(game => {
+  // Helper to construct individual game card DOM
+  function createGameCard(game, cardStatus) {
     const card = document.createElement('div');
     card.className = `game-card glass-card ${game.status}`;
     card.setAttribute('data-game-id', game.id);
 
     // Custom badges content
     let userInfoContent = '';
-    if (status === 'playing') {
+    if (cardStatus === 'playing') {
       userInfoContent = `
         <svg viewBox="0 0 24 24" width="12" height="12"><path fill="currentColor" d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zm3.3 14.3L11 12.8V7h1.5v4.9l3.7 2.2-.7 1.2z"/></svg>
         <span>${parseFloat(game.playingHours || 0).toFixed(1)}h chơi</span>
       `;
-    } else if (status === 'backlog') {
+    } else if (cardStatus === 'backlog') {
       userInfoContent = `
         <span class="priority-tag ${game.priority || 'medium'}" style="font-size: 9px; padding: 1px 5px;">
           ${game.priority === 'high' ? 'High' : game.priority === 'low' ? 'Low' : 'Med'}
@@ -200,7 +201,7 @@ export function renderListTab(status) {
     }
     const mcBadge = mcScore ? `<div class="metacritic-badge ${mcClass}">${mcScore}</div>` : '';
 
-    const firstGenre = game.genres && game.genres.length > 0 ? game.genres[0] : 'RAWG Game';
+    const firstGenre = game.genres && game.genres.length > 0 ? (typeof game.genres[0] === 'object' ? game.genres[0].name : game.genres[0]) : 'RAWG Game';
     
     // Platform details
     const platformText = game.platform && game.platform !== 'none' ? game.platform : '';
@@ -243,6 +244,112 @@ export function renderListTab(status) {
         </div>
       </div>
     `;
-    grid.appendChild(card);
-  });
+    return card;
+  }
+
+  // Helper to extract series name
+  function determineSeriesName(group) {
+    const names = group.map(g => g.name);
+    let shortest = names[0];
+    names.forEach(name => {
+      if (name.length < shortest.length) shortest = name;
+    });
+    
+    let clean = shortest.split(':')[0].split('-')[0].trim();
+    clean = clean.replace(/\s+\d+$/, '').replace(/\s+[IVXLCDM]+$/i, '').trim();
+    return clean || shortest;
+  }
+
+  const viewMode = document.getElementById(`${status}-view-mode`)?.value || 'grid';
+
+  if (viewMode === 'grid') {
+    filtered.forEach(game => {
+      const card = createGameCard(game, status);
+      grid.appendChild(card);
+    });
+  } else {
+    // 1. Group games transitively based on seriesGameIds matches
+    const groups = [];
+    const ungrouped = [...filtered];
+
+    while (ungrouped.length > 0) {
+      const game = ungrouped.shift();
+      const currentGroup = [game];
+      const seriesIds = new Set(game.seriesGameIds || []);
+
+      for (let i = ungrouped.length - 1; i >= 0; i--) {
+        const other = ungrouped[i];
+        const otherSeries = other.seriesGameIds || [];
+        const isRelated = seriesIds.has(other.id) || otherSeries.includes(game.id);
+
+        if (isRelated) {
+          currentGroup.push(other);
+          otherSeries.forEach(id => seriesIds.add(id));
+          ungrouped.splice(i, 1);
+        }
+      }
+      groups.push(currentGroup);
+    }
+
+    // 2. Sort into series groups vs standalone games
+    const seriesGroups = [];
+    const standaloneGames = [];
+
+    groups.forEach(g => {
+      if (g.length >= 2) {
+        seriesGroups.push({
+          name: determineSeriesName(g),
+          games: g,
+          maxUpdatedAt: Math.max(...g.map(game => game.updatedAt || 0))
+        });
+      } else {
+        standaloneGames.push(g[0]);
+      }
+    });
+
+    // Sort series groups by maxUpdatedAt descending (recently updated series float to the top)
+    seriesGroups.sort((a, b) => b.maxUpdatedAt - a.maxUpdatedAt);
+
+    // 3. Render series groups
+    seriesGroups.forEach(group => {
+      const groupContainer = document.createElement('div');
+      groupContainer.className = 'series-group-container';
+
+      const title = document.createElement('h3');
+      title.className = 'series-group-title';
+      title.innerHTML = `📦 Dòng game: ${group.name} <span class="series-group-count">${group.games.length} game</span>`;
+      groupContainer.appendChild(title);
+
+      const subGrid = document.createElement('div');
+      subGrid.className = 'series-game-grid';
+      group.games.forEach(game => {
+        const card = createGameCard(game, status);
+        subGrid.appendChild(card);
+      });
+      groupContainer.appendChild(subGrid);
+
+      grid.appendChild(groupContainer);
+    });
+
+    // 4. Render standalone games
+    if (standaloneGames.length > 0) {
+      const standaloneContainer = document.createElement('div');
+      standaloneContainer.className = 'series-group-container standalone-group-container';
+
+      const title = document.createElement('h3');
+      title.className = 'series-group-title';
+      title.innerHTML = `🎮 Các game đơn bản khác <span class="series-group-count">${standaloneGames.length} game</span>`;
+      standaloneContainer.appendChild(title);
+
+      const subGrid = document.createElement('div');
+      subGrid.className = 'series-game-grid';
+      standaloneGames.forEach(game => {
+        const card = createGameCard(game, status);
+        subGrid.appendChild(card);
+      });
+      standaloneContainer.appendChild(subGrid);
+
+      grid.appendChild(standaloneContainer);
+    }
+  }
 }

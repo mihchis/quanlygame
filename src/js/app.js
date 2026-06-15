@@ -3,11 +3,13 @@
 
 import { state, loadConfig, saveConfig, loadGames, saveGames } from './state.js';
 import { updateLibraryStats, renderDashboard } from './components/dashboard.js';
-import { renderDiscoverTab, loadMoreTrending, loadMoreUpcoming, loadMoreBrowse } from './components/discover.js';
-import { renderSearchTab, loadMoreSearch } from './components/search.js';
+import { renderDiscoverTab } from './components/discover.js';
+import { renderSearchTab } from './components/search.js';
 import { renderListTab } from './components/library.js';
 import { openGameDetails, closeModal, saveModalGame, deleteModalGame, updateModalFieldsVisibility, updateSubstatusDropdown, setModalStarRating } from './components/modal.js';
 import { parseDxDiagText, updateSpecsPreviewUI } from './components/dxdiag.js';
+import { initFirebase, onAuthChanged, signIn, signUp, signOutUser, fetchGamesFromCloud, syncGamesToCloud, saveAvatarToCloud, fetchAvatarFromCloud } from './firebase.js';
+import { showConfirm, showAlert } from './components/dialog.js';
 
 // DOM Elements
 const sidebarLinks = document.querySelectorAll('.menu-item[data-tab]');
@@ -24,8 +26,7 @@ const completedSearch = document.getElementById('completed-search-input');
 // Search elements
 const rawgSearchInput = document.getElementById('rawg-search-input');
 const btnRawgSearch = document.getElementById('btn-rawg-search');
-const searchLoadMoreContainer = document.getElementById('search-load-more-container');
-const btnSearchLoadMore = document.getElementById('btn-search-load-more');
+
 
 // Settings Elements
 const inputApiKey = document.getElementById('input-api-key');
@@ -52,9 +53,7 @@ const btnUploadDxdiag = document.getElementById('btn-upload-dxdiag');
 const dxdiagFileInput = document.getElementById('dxdiag-file-input');
 
 // Discover elements
-const btnTrendingLoadMore = document.getElementById('btn-trending-load-more');
-const btnUpcomingLoadMore = document.getElementById('btn-upcoming-load-more');
-const btnBrowseLoadMore = document.getElementById('btn-browse-load-more');
+
 const btnBrowseBack = document.getElementById('btn-browse-back');
 const browseResultsSection = document.getElementById('browse-results-section');
 
@@ -79,6 +78,40 @@ function applySidebarState(collapsed) {
 
 // Restore persisted sidebar state
 applySidebarState(localStorage.getItem('sidebarCollapsed') === 'true');
+
+// Sync and merge cloud games with local games on login
+async function handleCloudSyncOnLogin(cloudGames) {
+  if (!cloudGames) {
+    console.log('Không lấy được dữ liệu từ đám mây (hoặc trống). Giữ nguyên dữ liệu cục bộ.');
+    if (state.localGames && state.localGames.length > 0) {
+      await syncGamesToCloud(state.localGames);
+    }
+    return;
+  }
+
+  console.log(`Bắt đầu đồng bộ hóa. Game cục bộ: ${state.localGames.length}, Game đám mây: ${cloudGames.length}`);
+
+  const mergedMap = new Map();
+  
+  // Load local games
+  state.localGames.forEach(g => {
+    mergedMap.set(g.id, g);
+  });
+
+  // Merge cloud games based on updatedAt timestamp
+  cloudGames.forEach(cg => {
+    const lg = mergedMap.get(cg.id);
+    if (!lg || (cg.updatedAt || 0) > (lg.updatedAt || 0)) {
+      mergedMap.set(cg.id, cg);
+    }
+  });
+
+  const mergedGames = Array.from(mergedMap.values());
+  console.log(`Kết quả gộp: ${mergedGames.length} game.`);
+
+  state.localGames = mergedGames;
+  await saveGames(state.localGames);
+}
 
 // Initialize Application
 async function initApp() {
@@ -136,22 +169,220 @@ async function initApp() {
       updateSpecsPreviewUI(state.appConfig.systemSpecs);
     }
 
-    // 4. Update data views
-    updateLibraryStats();
-    renderDashboard();
+    // 4. Initialize Firebase & Auth UI
+    const fbApp = await initFirebase();
+    if (!fbApp) {
+      const authScreen = document.getElementById('auth-screen');
+      const sidebarUserCard = document.getElementById('sidebar-user-card');
+      if (authScreen) authScreen.style.display = 'none';
+      if (sidebarUserCard) sidebarUserCard.style.display = 'none';
+      console.log("Không thể kết nối Firebase hoặc chưa cấu hình. Bỏ qua Auth và đồng bộ đám mây.");
+      
+      // Setup offline views
+      updateLibraryStats();
+      renderDashboard();
 
-    // 5. If no API key is present, prompt user visually and go to settings tab
-    if (!state.appConfig.apiKey) {
-      switchTab('settings');
-      if (keyTestFeedback) {
-        keyTestFeedback.textContent = 'Vui lòng nhận và cấu hình RAWG API Key để sử dụng tính năng tìm kiếm!';
-        keyTestFeedback.className = 'feedback-message error';
+      if (!state.appConfig.apiKey) {
+        switchTab('settings');
+        if (keyTestFeedback) {
+          keyTestFeedback.textContent = 'Vui lòng nhận và cấu hình RAWG API Key để sử dụng tính năng tìm kiếm!';
+          keyTestFeedback.className = 'feedback-message error';
+        }
+      } else {
+        renderActiveTabContents();
+        resolveUnresolvedGames();
+        resolveLibrarySeries();
       }
     } else {
-      renderActiveTabContents();
-      
-      // Resolve CSV imported games using RAWG API in the background
-      resolveUnresolvedGames();
+      let isLoginView = true;
+      const authScreen = document.getElementById('auth-screen');
+      const loginForm = document.getElementById('login-form');
+      const registerForm = document.getElementById('register-form');
+      const authErrorMsg = document.getElementById('auth-error-msg');
+      const authToggleText = document.getElementById('auth-toggle-text');
+      const linkToggleAuth = document.getElementById('link-toggle-auth');
+      const sidebarUserCard = document.getElementById('sidebar-user-card');
+      const userEmailLabel = document.getElementById('user-email-label');
+      const btnLogout = document.getElementById('btn-logout');
+
+      if (linkToggleAuth) {
+        linkToggleAuth.addEventListener('click', (e) => {
+          e.preventDefault();
+          isLoginView = !isLoginView;
+          if (authErrorMsg) authErrorMsg.style.display = 'none';
+          if (isLoginView) {
+            if (loginForm) loginForm.style.display = 'block';
+            if (registerForm) registerForm.style.display = 'none';
+            if (authToggleText) authToggleText.textContent = 'Chưa có tài khoản?';
+            linkToggleAuth.textContent = 'Đăng ký ngay';
+          } else {
+            if (loginForm) loginForm.style.display = 'none';
+            if (registerForm) registerForm.style.display = 'block';
+            if (authToggleText) authToggleText.textContent = 'Đã có tài khoản?';
+            linkToggleAuth.textContent = 'Đăng nhập';
+          }
+        });
+      }
+
+      if (loginForm) {
+        loginForm.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const email = document.getElementById('auth-email').value.trim();
+          const password = document.getElementById('auth-password').value;
+          const submitBtn = document.getElementById('btn-login-submit');
+          
+          try {
+            if (submitBtn) {
+              submitBtn.disabled = true;
+              submitBtn.textContent = 'Đang đăng nhập...';
+            }
+            if (authErrorMsg) authErrorMsg.style.display = 'none';
+            
+            await signIn(email, password);
+          } catch (err) {
+            console.error(err);
+            if (authErrorMsg) {
+              authErrorMsg.textContent = 'Đăng nhập thất bại: ' + err.message;
+              authErrorMsg.style.display = 'block';
+            }
+          } finally {
+            if (submitBtn) {
+              submitBtn.disabled = false;
+              submitBtn.textContent = 'Đăng nhập';
+            }
+          }
+        });
+      }
+
+      if (registerForm) {
+        registerForm.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const email = document.getElementById('reg-email').value.trim();
+          const password = document.getElementById('reg-password').value;
+          const confirm = document.getElementById('reg-confirm').value;
+          const submitBtn = document.getElementById('btn-register-submit');
+          
+          if (password !== confirm) {
+            if (authErrorMsg) {
+              authErrorMsg.textContent = 'Mật khẩu xác nhận không khớp!';
+              authErrorMsg.style.display = 'block';
+            }
+            return;
+          }
+          
+          try {
+            if (submitBtn) {
+              submitBtn.disabled = true;
+              submitBtn.textContent = 'Đang đăng ký...';
+            }
+            if (authErrorMsg) authErrorMsg.style.display = 'none';
+            
+            await signUp(email, password);
+          } catch (err) {
+            console.error(err);
+            if (authErrorMsg) {
+              authErrorMsg.textContent = 'Đăng ký thất bại: ' + err.message;
+              authErrorMsg.style.display = 'block';
+            }
+          } finally {
+            if (submitBtn) {
+              submitBtn.disabled = false;
+              submitBtn.textContent = 'Đăng ký tài khoản';
+            }
+          }
+        });
+      }
+
+      if (btnLogout) {
+        btnLogout.addEventListener('click', async (e) => {
+          e.preventDefault();
+          await signOutUser();
+        });
+      }
+
+      // Avatar upload handler
+      const avatarContainer = document.getElementById('user-avatar-container');
+      const avatarFileInput = document.getElementById('avatar-file-input');
+      if (avatarContainer && avatarFileInput) {
+        avatarContainer.addEventListener('click', () => avatarFileInput.click());
+        avatarFileInput.addEventListener('change', (e) => {
+          const file = e.target.files[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = async (ev) => {
+            const base64 = ev.target.result;
+            const avatarImg = document.getElementById('user-avatar-img');
+            const avatarEmoji = document.getElementById('user-avatar-emoji');
+            if (avatarImg) { avatarImg.src = base64; avatarImg.style.display = 'block'; }
+            if (avatarEmoji) avatarEmoji.style.display = 'none';
+            // Save locally
+            const { getCurrentUser } = await import('./firebase.js');
+            const cu = getCurrentUser();
+            if (cu) localStorage.setItem('gamevault_avatar_' + cu.uid, base64);
+            // Save to cloud
+            saveAvatarToCloud(base64);
+          };
+          reader.readAsDataURL(file);
+          avatarFileInput.value = '';
+        });
+      }
+
+      await onAuthChanged(async (user) => {
+        if (user) {
+          if (authScreen) authScreen.style.display = 'none';
+          if (sidebarUserCard) sidebarUserCard.style.display = 'flex';
+          if (userEmailLabel) userEmailLabel.textContent = user.email || 'User';
+          
+          // Load avatar
+          const avatarImg = document.getElementById('user-avatar-img');
+          const avatarEmoji = document.getElementById('user-avatar-emoji');
+          const localAvatar = localStorage.getItem('gamevault_avatar_' + user.uid);
+          if (localAvatar) {
+            if (avatarImg) { avatarImg.src = localAvatar; avatarImg.style.display = 'block'; }
+            if (avatarEmoji) avatarEmoji.style.display = 'none';
+          }
+          // Also try cloud avatar (may be newer)
+          fetchAvatarFromCloud().then(cloudAvatar => {
+            if (cloudAvatar) {
+              localStorage.setItem('gamevault_avatar_' + user.uid, cloudAvatar);
+              if (avatarImg) { avatarImg.src = cloudAvatar; avatarImg.style.display = 'block'; }
+              if (avatarEmoji) avatarEmoji.style.display = 'none';
+            }
+          }).catch(() => {});
+
+          try {
+            const cloudGames = await fetchGamesFromCloud();
+            await handleCloudSyncOnLogin(cloudGames);
+          } catch (err) {
+            console.error("Lỗi khi đồng bộ đám mây:", err);
+          }
+          
+          updateLibraryStats();
+          renderDashboard();
+
+          if (!state.appConfig.apiKey) {
+            switchTab('settings');
+            if (keyTestFeedback) {
+              keyTestFeedback.textContent = 'Vui lòng nhận và cấu hình RAWG API Key để sử dụng tính năng tìm kiếm!';
+              keyTestFeedback.className = 'feedback-message error';
+            }
+          } else {
+            renderActiveTabContents();
+            resolveUnresolvedGames();
+            resolveLibrarySeries();
+          }
+        } else {
+          if (authScreen) authScreen.style.display = 'flex';
+          if (sidebarUserCard) sidebarUserCard.style.display = 'none';
+          
+          isLoginView = true;
+          if (loginForm) loginForm.style.display = 'block';
+          if (registerForm) registerForm.style.display = 'none';
+          if (authToggleText) authToggleText.textContent = 'Chưa có tài khoản?';
+          if (linkToggleAuth) linkToggleAuth.textContent = 'Đăng ký ngay';
+          if (authErrorMsg) authErrorMsg.style.display = 'none';
+        }
+      });
     }
   } catch (err) {
     console.error('Lỗi khi khởi tạo ứng dụng:', err);
@@ -213,6 +444,41 @@ async function resolveUnresolvedGames() {
   console.log('Đã giải quyết xong tất cả RAWG IDs cho game nhập từ CSV!');
 }
 
+// Resolve series game IDs for library games that don't have them yet in the background
+async function resolveLibrarySeries() {
+  const gamesMissingSeries = state.localGames.filter(g => !g.seriesGameIds);
+  if (gamesMissingSeries.length === 0) return;
+
+  console.log(`Bắt đầu lấy thông tin dòng game cho ${gamesMissingSeries.length} game trong thư viện...`);
+
+  for (const game of gamesMissingSeries) {
+    try {
+      // Respect RAWG rate limit guidelines (350ms pause)
+      await new Promise(r => setTimeout(r, 350));
+      
+      const data = await window.api.getGameSeries(game.id, 40);
+      game.seriesGameIds = (data && data.results) ? data.results.map(r => r.id) : [];
+      
+      const idx = state.localGames.findIndex(g => g.id === game.id);
+      if (idx !== -1) {
+        state.localGames[idx] = game;
+      }
+    } catch (err) {
+      console.error(`Lỗi khi lấy thông tin dòng game cho ${game.name}:`, err);
+      // Give it an empty array so we don't try fetching again next boot
+      game.seriesGameIds = [];
+    }
+  }
+
+  await saveGames(state.localGames);
+  console.log('Đã cập nhật xong thông tin dòng game cho tất cả game!');
+  
+  // Re-render the active tab if it's a library tab to show the grouped lists
+  if (state.activeTab !== 'discover' && state.activeTab !== 'search' && state.activeTab !== 'dashboard') {
+    renderListTab(state.activeTab);
+  }
+}
+
 // Update UI indicator for API key status
 function updateAPIKeyUIStatus() {
   if (!apiStatusDot || !apiStatusText) return;
@@ -251,11 +517,13 @@ function setupEventListeners() {
     const genre = document.getElementById(`${status}-filter-genre`);
     const platform = document.getElementById(`${status}-filter-platform`);
     const sort = document.getElementById(`${status}-sort`);
+    const viewMode = document.getElementById(`${status}-view-mode`);
 
     if (search) search.addEventListener('input', () => renderListTab(status));
     if (genre) genre.addEventListener('change', () => renderListTab(status));
     if (platform) platform.addEventListener('change', () => renderListTab(status));
     if (sort) sort.addEventListener('change', () => renderListTab(status));
+    if (viewMode) viewMode.addEventListener('change', () => renderListTab(status));
   };
 
   bindListFilters('playing');
@@ -358,7 +626,7 @@ function setupEventListeners() {
   if (btnExportData) {
     btnExportData.addEventListener('click', () => {
       if (state.localGames.length === 0) {
-        alert('Thư viện game của bạn trống, không có gì để xuất!');
+        showAlert('Thông báo', 'Thư viện game của bạn trống, không có gì để xuất!', 'info');
         return;
       }
       const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(state.localGames, null, 2));
@@ -386,33 +654,35 @@ function setupEventListeners() {
           if (Array.isArray(imported)) {
             const isValid = imported.every(item => item.id && item.name && item.status);
             if (isValid) {
-              if (confirm(`Bạn có muốn nhập ${imported.length} game vào thư viện? Hành động này sẽ gộp vào dữ liệu hiện tại.`)) {
-                // Merge by id (unique game ids)
-                const merged = [...state.localGames];
-                imported.forEach(impItem => {
-                  const index = merged.findIndex(g => g.id === impItem.id);
-                  if (index !== -1) {
-                    merged[index] = impItem; // update
-                  } else {
-                    merged.push(impItem); // insert
-                  }
-                });
-                
-                state.localGames = merged;
-                await saveGames(state.localGames);
-                updateLibraryStats();
-                renderDashboard();
-                renderActiveTabContents();
-                alert('Nhập dữ liệu thành công!');
-              }
+              showConfirm('Xác nhận nhập', `Bạn có muốn nhập ${imported.length} game vào thư viện? Hành động này sẽ gộp vào dữ liệu hiện tại.`).then(async (confirmImport) => {
+                if (confirmImport) {
+                  // Merge by id (unique game ids)
+                  const merged = [...state.localGames];
+                  imported.forEach(impItem => {
+                    const index = merged.findIndex(g => g.id === impItem.id);
+                    if (index !== -1) {
+                      merged[index] = impItem; // update
+                    } else {
+                      merged.push(impItem); // insert
+                    }
+                  });
+                  
+                  state.localGames = merged;
+                  await saveGames(state.localGames);
+                  updateLibraryStats();
+                  renderDashboard();
+                  renderActiveTabContents();
+                  showAlert('Thành công', 'Nhập dữ liệu thành công!', 'success');
+                }
+              });
             } else {
-              alert('File JSON không đúng cấu trúc thư viện GameVault!');
+              showAlert('Lỗi', 'File JSON không đúng cấu trúc thư viện GameVault!', 'error');
             }
           } else {
-            alert('Dữ liệu trong file không hợp lệ (Phải là một danh sách game)!');
+            showAlert('Lỗi', 'Dữ liệu trong file không hợp lệ (Phải là một danh sách game)!', 'error');
           }
         } catch (err) {
-          alert('Lỗi đọc file JSON: ' + err.message);
+          showAlert('Lỗi', 'Lỗi đọc file JSON: ' + err.message, 'error');
         }
       };
       reader.readAsText(file);
@@ -423,13 +693,14 @@ function setupEventListeners() {
   // Clear library data
   if (btnClearAll) {
     btnClearAll.addEventListener('click', async () => {
-      if (confirm('CẢNH BÁO: Bạn có chắc chắn muốn XÓA TOÀN BỘ thư viện game? Hành động này không thể hoàn tác!')) {
+      const confirmClear = await showConfirm('Cảnh báo nguy hiểm', 'CẢNH BÁO: Bạn có chắc chắn muốn XÓA TOÀN BỘ thư viện game? Hành động này không thể hoàn tác!');
+      if (confirmClear) {
         state.localGames = [];
         await saveGames(state.localGames);
         updateLibraryStats();
         renderDashboard();
         renderActiveTabContents();
-        alert('Đã xóa sạch thư viện game!');
+        showAlert('Thông báo', 'Đã xóa sạch thư viện game!', 'success');
       }
     });
   }
@@ -491,12 +762,12 @@ function setupEventListeners() {
             state.appConfig.systemSpecs = specs;
             await saveConfig(state.appConfig);
             updateSpecsPreviewUI(specs);
-            alert('Đã tải lên và phân tích cấu hình từ tệp DxDiag thành công!');
+            showAlert('Thành công', 'Đã tải lên và phân tích cấu hình từ tệp DxDiag thành công!', 'success');
           } else {
-            alert('Không thể nhận dạng thông tin phần cứng từ file này. Vui lòng tải đúng file txt xuất ra từ DxDiag!');
+            showAlert('Lỗi', 'Không thể nhận dạng thông tin phần cứng từ file này. Vui lòng tải đúng file txt xuất ra từ DxDiag!', 'error');
           }
         } catch (err) {
-          alert('Lỗi xử lý file DxDiag: ' + err.message);
+          showAlert('Lỗi', 'Lỗi xử lý file DxDiag: ' + err.message, 'error');
         }
       };
       reader.readAsText(file);
@@ -504,11 +775,7 @@ function setupEventListeners() {
     });
   }
 
-  // Load more button triggers
-  if (btnTrendingLoadMore) btnTrendingLoadMore.addEventListener('click', loadMoreTrending);
-  if (btnUpcomingLoadMore) btnUpcomingLoadMore.addEventListener('click', loadMoreUpcoming);
-  if (btnSearchLoadMore) btnSearchLoadMore.addEventListener('click', loadMoreSearch);
-  if (btnBrowseLoadMore) btnBrowseLoadMore.addEventListener('click', loadMoreBrowse);
+
   if (btnBrowseBack) btnBrowseBack.addEventListener('click', () => {
     if (browseResultsSection) browseResultsSection.style.display = 'none';
     // Deactivate tag and creator pills
@@ -543,6 +810,20 @@ export function switchTab(tabId) {
   state.popularGamesCached = null;
   state.searchGamesCached = null;
   state.searchQueryCached = '';
+
+  // Reset pagination buffers
+  state.trendingGamesBuffer = null;
+  state.trendingApiPage = 0;
+  state.trendingTotalCount = 0;
+  state.upcomingGamesBuffer = null;
+  state.upcomingApiPage = 0;
+  state.upcomingTotalCount = 0;
+  state.browseGamesBuffer = null;
+  state.browseApiPage = 0;
+  state.browseTotalCount = 0;
+  state.searchGamesBuffer = null;
+  state.searchApiPage = 0;
+  state.searchTotalCount = 0;
 
   // Update Active Link UI
   sidebarLinks.forEach(link => {

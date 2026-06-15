@@ -61,6 +61,22 @@
         </a>
       </nav>
 
+      <!-- User Profile Card -->
+      <div class="sidebar-user-card" id="sidebar-user-card" style="display: none;">
+        <div class="user-avatar-round" id="user-avatar-container" title="Nhấp để đổi ảnh đại diện">
+          <span class="user-avatar-emoji" id="user-avatar-emoji">👤</span>
+          <img class="user-avatar-img" id="user-avatar-img" src="" alt="Avatar" style="display: none;">
+          <div class="avatar-upload-overlay">
+            <svg viewBox="0 0 24 24" width="12" height="12"><path fill="currentColor" d="M3 4V1h2v3h3v2H5v3H3V6H0V4h3zm3 6V7h3V4h7l1.83 2H21c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H5c-1.1 0-2-.9-2-2V10h3zm7 9c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-3.2-5c0 1.77 1.43 3.2 3.2 3.2s3.2-1.43 3.2-3.2-1.43-3.2-3.2-3.2-3.2 1.43-3.2 3.2z"/></svg>
+          </div>
+          <input type="file" id="avatar-file-input" accept="image/*" style="display: none;">
+        </div>
+        <div class="user-info-text">
+          <span class="user-email-label" id="user-email-label">user@domain.com</span>
+          <a href="#" class="btn-logout" id="btn-logout">Đăng xuất</a>
+        </div>
+      </div>
+
       <div class="sidebar-footer">
         <a href="#" class="menu-item" data-tab="settings" id="nav-settings" data-tooltip="Cài đặt">
           <svg viewBox="0 0 24 24" width="20" height="20" class="menu-icon"><path fill="currentColor" d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
@@ -102,8 +118,8 @@
             <div class="game-grid" id="discover-trending-grid">
               <!-- Dynamic Trending Games -->
             </div>
-            <div class="load-more-container" id="trending-load-more-container" style="text-align: center; margin-top: 20px;">
-              <button class="btn btn-secondary" id="btn-trending-load-more">Xem thêm</button>
+            <div class="pagination-container" id="trending-pagination-container" style="display: none;">
+              <!-- Rendered dynamically -->
             </div>
           </div>
 
@@ -117,8 +133,8 @@
             <div class="game-grid" id="discover-upcoming-grid">
               <!-- Dynamic Upcoming Games -->
             </div>
-            <div class="load-more-container" id="upcoming-load-more-container" style="text-align: center; margin-top: 20px;">
-              <button class="btn btn-secondary" id="btn-upcoming-load-more">Xem thêm</button>
+            <div class="pagination-container" id="upcoming-pagination-container" style="display: none;">
+              <!-- Rendered dynamically -->
             </div>
           </div>
 
@@ -142,8 +158,8 @@
             <div class="game-grid" id="browse-results-grid">
               <!-- Dynamic Browse Results -->
             </div>
-            <div class="load-more-container" id="browse-load-more-container" style="text-align: center; margin-top: 20px; display: none;">
-              <button class="btn btn-secondary" id="btn-browse-load-more">Xem thêm</button>
+            <div class="pagination-container" id="browse-pagination-container" style="display: none;">
+              <!-- Rendered dynamically -->
             </div>
           </div>
 
@@ -383,6 +399,10 @@
               <option value="released-desc">Năm ra mắt (Mới - Cũ)</option>
               <option value="startdate-desc">Ngày bắt đầu (Mới nhất)</option>
             </select>
+            <select class="filter-select-field" id="playing-view-mode">
+              <option value="grid">Xem danh sách</option>
+              <option value="series">Xem theo dòng game</option>
+            </select>
           </div>
           <div class="game-grid" id="playing-game-grid">
             <!-- Dynamic Playing Games -->
@@ -406,6 +426,10 @@
               <option value="priority-desc">Ưu tiên (Cao - Thấp)</option>
               <option value="metacritic-desc">Metacritic (Cao - Thấp)</option>
               <option value="released-desc">Năm ra mắt (Mới - Cũ)</option>
+            </select>
+            <select class="filter-select-field" id="backlog-view-mode">
+              <option value="grid">Xem danh sách</option>
+              <option value="series">Xem theo dòng game</option>
             </select>
           </div>
           <div class="game-grid" id="backlog-game-grid">
@@ -431,6 +455,10 @@
               <option value="metacritic-desc">Metacritic (Cao - Thấp)</option>
               <option value="released-desc">Năm ra mắt (Mới - Cũ)</option>
               <option value="enddate-desc">Ngày hoàn thành (Mới nhất)</option>
+            </select>
+            <select class="filter-select-field" id="completed-view-mode">
+              <option value="grid">Xem danh sách</option>
+              <option value="series">Xem theo dòng game</option>
             </select>
           </div>
           <div class="game-grid" id="completed-game-grid">
@@ -459,8 +487,8 @@
             <div class="game-grid" id="search-game-grid">
               <!-- Dynamic RAWG Search Results / Popular Games -->
             </div>
-            <div class="load-more-container" id="search-load-more-container" style="text-align: center; margin-top: 20px; margin-bottom: 20px;">
-              <button class="btn btn-secondary" id="btn-search-load-more">Xem thêm</button>
+            <div class="pagination-container" id="search-pagination-container" style="display: none;">
+              <!-- Rendered dynamically -->
             </div>
           </div>
         </section>
@@ -677,6 +705,41 @@
               <button class="btn btn-danger hidden" id="btn-delete-modal">Xóa khỏi thư viện</button>
             </div>
           </div>
+
+          <!-- Play Sessions Journal Section -->
+          <div class="modal-journal-section" id="modal-journal-section" style="margin-bottom: 24px; display: none;">
+            <h4 class="mini-title" style="margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
+              <span style="display: flex; align-items: center; gap: 6px;">📝 Nhật ký chơi game (Gaming Journal)</span>
+              <button class="btn btn-secondary btn-sm" id="btn-toggle-journal-form" style="font-size: 11px; padding: 4px 8px; cursor: pointer;">+ Thêm buổi chơi</button>
+            </h4>
+            
+            <!-- Add Session Form -->
+            <div id="journal-add-form" class="glass-card" style="padding: 14px; margin-bottom: 12px; background: rgba(255, 255, 255, 0.02); display: none; border: 1px solid var(--border-glass); border-radius: 8px;">
+              <div class="form-row" style="margin-bottom: 8px; display: flex; gap: 12px;">
+                <div class="form-group flex-1" style="flex: 1; display: flex; flex-direction: column;">
+                  <label for="input-session-date" style="font-size: 11px; margin-bottom: 4px; color: var(--text-muted);">Ngày chơi</label>
+                  <input type="date" id="input-session-date" style="background: var(--bg-input); border: 1px solid var(--border-glass); color: var(--text-white); border-radius: 6px; padding: 6px; font-size: 12px; outline: none;">
+                </div>
+                <div class="form-group flex-1" style="flex: 1; display: flex; flex-direction: column;">
+                  <label for="input-session-hours" style="font-size: 11px; margin-bottom: 4px; color: var(--text-muted);">Số giờ chơi (+h)</label>
+                  <input type="number" id="input-session-hours" min="0.1" step="0.1" value="1.0" style="background: var(--bg-input); border: 1px solid var(--border-glass); color: var(--text-white); border-radius: 6px; padding: 6px; font-size: 12px; outline: none;">
+                </div>
+              </div>
+              <div class="form-group" style="margin-bottom: 10px; display: flex; flex-direction: column;">
+                <label for="input-session-notes" style="font-size: 11px; margin-bottom: 4px; color: var(--text-muted);">Nội dung / Ghi chú buổi chơi</label>
+                <textarea id="input-session-notes" placeholder="Hôm nay bạn đã làm được gì trong game?..." rows="2" style="background: var(--bg-input); border: 1px solid var(--border-glass); color: var(--text-white); border-radius: 6px; padding: 8px; font-size: 12px; outline: none; resize: vertical;"></textarea>
+              </div>
+              <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                <button class="btn btn-secondary btn-sm" id="btn-cancel-session" style="font-size: 11px; padding: 4px 10px; cursor: pointer;">Hủy</button>
+                <button class="btn btn-primary btn-sm" id="btn-save-session" style="font-size: 11px; padding: 4px 10px; cursor: pointer;">Ghi nhận</button>
+              </div>
+            </div>
+
+            <!-- Sessions List Container -->
+            <div id="journal-sessions-list" style="display: flex; flex-direction: column; gap: 8px; max-height: 200px; overflow-y: auto; padding-right: 4px;" class="scrollbar-custom">
+              <!-- Dynamic session logs -->
+            </div>
+          </div>
           
           <div class="modal-game-description scrollbar-custom" id="modal-description">
             Đang tải mô tả game...
@@ -695,6 +758,8 @@
             <div><strong style="color: var(--text-muted);">Thành tựu:</strong> <span id="modal-achievements">--</span></div>
             <div><strong style="color: var(--text-muted);">Lượng sở hữu:</strong> <span id="modal-added-count">--</span></div>
             <div><strong style="color: var(--text-muted);">Cộng đồng Reddit:</strong> <a id="modal-reddit" href="#" target="_blank" style="color: var(--accent-purple); text-decoration: none; font-weight: 500;">Link</a></div>
+            <div><strong style="color: var(--text-muted);">Trụ sở phát triển:</strong> <span id="modal-studio-hq">--</span></div>
+            <div><strong style="color: var(--text-muted);">Năm thành lập:</strong> <span id="modal-studio-est">--</span></div>
           </div>
 
           <!-- RAWG Ratings Chart Section -->
@@ -766,6 +831,36 @@
               <!-- Dynamic Game Series -->
             </div>
           </div>
+          
+          <!-- Esports & Tournaments Section -->
+          <div class="modal-esports-section" id="modal-esports-section" style="margin-bottom: 20px; display: none;">
+            <h4 class="mini-title" style="margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
+              🏆 Giải đấu & Esports
+            </h4>
+            <div class="esports-container glass-card" style="padding: 16px; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-glass); border-radius: 12px;">
+              <!-- Esports Sub-tabs Navigation -->
+              <div class="esports-tabs" style="display: flex; gap: 4px; margin-bottom: 14px; border-bottom: 1px solid var(--border-glass); padding-bottom: 8px;">
+                <button class="esports-tab-btn active" data-tab="leagues">Giải đấu</button>
+                <button class="esports-tab-btn" data-tab="teams">Đội tuyển</button>
+                <button class="esports-tab-btn" data-tab="players">Tuyển thủ</button>
+                <button class="esports-tab-btn" data-tab="matches">Trận đấu</button>
+              </div>
+              
+              <!-- Tab content slots -->
+              <div id="esports-content-leagues" class="esports-tab-pane" style="display: block;">
+                <!-- List of leagues -->
+              </div>
+              <div id="esports-content-teams" class="esports-tab-pane" style="display: none;">
+                <!-- List of teams -->
+              </div>
+              <div id="esports-content-players" class="esports-tab-pane" style="display: none;">
+                <!-- List of players -->
+              </div>
+              <div id="esports-content-matches" class="esports-tab-pane" style="display: none;">
+                <!-- List of matches -->
+              </div>
+            </div>
+          </div>
 
           <!-- Reddit Posts Section -->
           <div class="modal-reddit-posts-section" id="modal-reddit-posts-section" style="margin-bottom: 20px; display: none;">
@@ -820,6 +915,69 @@
             </div>
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Auth Screen Overlay -->
+  <div id="auth-screen" class="auth-screen">
+    <div class="auth-card glass-card">
+      <div class="auth-logo">
+        <svg class="logo-icon" viewBox="0 0 24 24" width="48" height="48" style="animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;">
+          <path fill="currentColor" d="M17.3 6H6.7C4.6 6 3 7.6 3 9.7v4.6c0 2.1 1.6 3.7 3.7 3.7h.7l1.1-2h7l1.1 2h.7c2.1 0 3.7-1.6 3.7-3.7V9.7C21 7.6 19.4 6 17.3 6zM9 13.5H7.5V15H6v-1.5H4.5V12H6v-1.5h1.5V12H9v1.5zm3.75-2.75c-.4 0-.75-.3-.75-.75s.3-.75.75-.75.75.3.75.75-.3.75-.75.75zm1.5 2.5c-.4 0-.75-.3-.75-.75s.3-.75.75-.75.75.3.75.75-.3.75-.75.75zm0-5c-.4 0-.75-.3-.75-.75s.3-.75.75-.75.75.3.75.75-.3.75-.75.75zm1.5 2.5c-.4 0-.75-.3-.75-.75s.3-.75.75-.75.75.3.75.75-.3.75-.75.75z"/>
+        </svg>
+        <h2 class="auth-title" style="margin-top: 10px; margin-bottom: 0;">GameVault</h2>
+      </div>
+      <p class="auth-subtitle">Cổng kết nối kho game đám mây cá nhân</p>
+      
+      <!-- Login Form -->
+      <form id="login-form">
+        <div class="form-group">
+          <label for="auth-email">Email</label>
+          <input type="email" id="auth-email" required placeholder="name@domain.com">
+        </div>
+        <div class="form-group">
+          <label for="auth-password">Mật khẩu</label>
+          <input type="password" id="auth-password" required placeholder="••••••••">
+        </div>
+        <button type="submit" class="btn btn-primary btn-block" id="btn-login-submit">Đăng nhập</button>
+      </form>
+      
+      <!-- Register Form -->
+      <form id="register-form" style="display: none;">
+        <div class="form-group">
+          <label for="reg-email">Email</label>
+          <input type="email" id="reg-email" required placeholder="name@domain.com">
+        </div>
+        <div class="form-group">
+          <label for="reg-password">Mật khẩu</label>
+          <input type="password" id="reg-password" required placeholder="Tối thiểu 6 ký tự">
+        </div>
+        <div class="form-group">
+          <label for="reg-confirm">Xác nhận mật khẩu</label>
+          <input type="password" id="reg-confirm" required placeholder="Xác nhận lại mật khẩu">
+        </div>
+        <button type="submit" class="btn btn-primary btn-block" id="btn-register-submit">Đăng ký tài khoản</button>
+      </form>
+
+      <div class="auth-feedback error" id="auth-error-msg" style="display: none;"></div>
+
+      <div class="auth-toggle-link">
+        <span id="auth-toggle-text">Chưa có tài khoản?</span> 
+        <a href="#" id="link-toggle-auth">Đăng ký ngay</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- CUSTOM POPUP DIALOG (CONFIRM/ALERT) -->
+  <div class="custom-dialog-overlay" id="custom-dialog-overlay">
+    <div class="custom-dialog-card glass-card">
+      <div class="custom-dialog-icon info" id="custom-dialog-icon">ℹ️</div>
+      <h3 class="custom-dialog-title" id="custom-dialog-title">Thông báo</h3>
+      <p class="custom-dialog-message" id="custom-dialog-message">Nội dung thông báo...</p>
+      <div class="custom-dialog-buttons" id="custom-dialog-buttons">
+        <button class="btn btn-secondary" id="btn-custom-dialog-cancel">Hủy</button>
+        <button class="btn btn-primary" id="btn-custom-dialog-ok">Xác nhận</button>
       </div>
     </div>
   </div>

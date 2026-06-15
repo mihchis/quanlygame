@@ -1,14 +1,49 @@
 // Component: Search tab logic (calling RAWG global search)
 
 import { state } from '../state.js';
+import { renderPagination } from './pagination.js';
 
 // DOM elements
 const rawgSearchInput = document.getElementById('rawg-search-input');
 const searchLoading = document.getElementById('search-loading');
 const searchGameGrid = document.getElementById('search-game-grid');
 const searchResultsTitle = document.getElementById('search-results-title');
-const searchLoadMoreContainer = document.getElementById('search-load-more-container');
-const btnSearchLoadMore = document.getElementById('btn-search-load-more');
+const searchPaginationContainer = document.getElementById('search-pagination-container');
+
+async function fillSearchBuffer(query, targetLength) {
+  if (!state.searchGamesBuffer) {
+    state.searchGamesBuffer = [];
+    state.searchApiPage = 0;
+    state.searchTotalCount = 0;
+  }
+  const getFilteredLength = () => state.searchGamesBuffer.filter(game => !state.localGames.some(g => String(g.id) === String(game.id))).length;
+  if (getFilteredLength() >= targetLength) {
+    return;
+  }
+  let attempts = 0;
+  while (getFilteredLength() < targetLength && attempts < 5) {
+    state.searchApiPage++;
+    attempts++;
+    
+    let data;
+    if (!query) {
+      data = await window.api.getPopularGames(state.searchApiPage, 40);
+    } else {
+      data = await window.api.searchGames(query, state.searchApiPage, 40);
+    }
+    
+    if (!data) break;
+    
+    state.searchTotalCount = data.count;
+    if (!data.results || data.results.length === 0) {
+      break;
+    }
+    state.searchGamesBuffer.push(...data.results);
+    if (data.results.length < 40) {
+      break;
+    }
+  }
+}
 
 // Render RAWG search tab. Load trending if empty search
 export async function renderSearchTab() {
@@ -16,7 +51,18 @@ export async function renderSearchTab() {
   
   const query = rawgSearchInput.value.trim();
   searchGameGrid.innerHTML = '';
-  if (searchLoadMoreContainer) searchLoadMoreContainer.classList.add('hidden');
+  if (searchPaginationContainer) searchPaginationContainer.style.display = 'none';
+
+  // Reset page and buffer if query changes
+  if (query !== state.searchQueryCached) {
+    state.searchPage = 1;
+    state.searchQueryCached = query;
+    state.searchGamesBuffer = null;
+    state.searchApiPage = 0;
+    state.searchTotalCount = 0;
+    state.popularGamesCached = null;
+    state.searchGamesCached = null;
+  }
   
   if (!state.appConfig.apiKey) {
     searchGameGrid.innerHTML = `
@@ -30,21 +76,22 @@ export async function renderSearchTab() {
   // Load Popular trending games as initial fallback
   if (!query) {
     if (searchResultsTitle) searchResultsTitle.textContent = 'Những game nổi bật (RAWG)';
-    if (state.popularGamesCached) {
-      const rendered = renderRawgSearchResults(state.popularGamesCached.results);
-      if (state.popularGamesCached.next && rendered > 0) {
-        if (searchLoadMoreContainer) searchLoadMoreContainer.classList.remove('hidden');
-      }
-      return;
-    }
     
     showSearchLoading(true);
     try {
-      const data = await window.api.getPopularGames(1);
-      state.popularGamesCached = data;
-      const rendered = renderRawgSearchResults(data.results);
-      if (data.next && rendered > 0) {
-        if (searchLoadMoreContainer) searchLoadMoreContainer.classList.remove('hidden');
+      const targetLength = state.searchPage * 15;
+      await fillSearchBuffer(query, targetLength);
+      
+      if (state.searchGamesBuffer) {
+        const filtered = state.searchGamesBuffer.filter(game => !state.localGames.some(g => String(g.id) === String(game.id)));
+        const pageResults = filtered.slice((state.searchPage - 1) * 15, state.searchPage * 15);
+        renderRawgSearchResults(pageResults);
+        
+        // Render pagination
+        renderPagination(searchPaginationContainer, state.searchPage, state.searchTotalCount, async (newPage) => {
+          state.searchPage = newPage;
+          await renderSearchTab();
+        });
       }
     } catch (err) {
       handleRawgFetchError(err);
@@ -57,23 +104,21 @@ export async function renderSearchTab() {
   // Perform search
   if (searchResultsTitle) searchResultsTitle.textContent = `Kết quả tìm kiếm cho: "${query}"`;
   
-  // Use cache if query matches and cache exists
-  if (query === state.searchQueryCached && state.searchGamesCached) {
-    const rendered = renderRawgSearchResults(state.searchGamesCached.results);
-    if (state.searchGamesCached.next && rendered > 0) {
-      if (searchLoadMoreContainer) searchLoadMoreContainer.classList.remove('hidden');
-    }
-    return;
-  }
-
   showSearchLoading(true);
   try {
-    const data = await window.api.searchGames(query, 1);
-    state.searchQueryCached = query;
-    state.searchGamesCached = data;
-    const rendered = renderRawgSearchResults(data.results);
-    if (data.next && rendered > 0) {
-      if (searchLoadMoreContainer) searchLoadMoreContainer.classList.remove('hidden');
+    const targetLength = state.searchPage * 15;
+    await fillSearchBuffer(query, targetLength);
+    
+    if (state.searchGamesBuffer) {
+      const filtered = state.searchGamesBuffer.filter(game => !state.localGames.some(g => String(g.id) === String(game.id)));
+      const pageResults = filtered.slice((state.searchPage - 1) * 15, state.searchPage * 15);
+      renderRawgSearchResults(pageResults);
+      
+      // Render pagination
+      renderPagination(searchPaginationContainer, state.searchPage, state.searchTotalCount, async (newPage) => {
+        state.searchPage = newPage;
+        await renderSearchTab();
+      });
     }
   } catch (err) {
     handleRawgFetchError(err);
@@ -164,54 +209,4 @@ export function renderRawgSearchResults(results, append = false) {
   });
   
   return filteredResults.length;
-}
-
-// Load more search results
-export async function loadMoreSearch() {
-  state.searchPage++;
-  if (btnSearchLoadMore) {
-    btnSearchLoadMore.disabled = true;
-    btnSearchLoadMore.textContent = 'Đang tải...';
-  }
-  const query = rawgSearchInput.value.trim();
-  try {
-    let data;
-    if (!query) {
-      data = await window.api.getPopularGames(state.searchPage);
-      if (data && data.results && data.results.length > 0) {
-        if (state.popularGamesCached) {
-          state.popularGamesCached.results.push(...data.results);
-          state.popularGamesCached.next = data.next;
-        }
-      }
-    } else {
-      data = await window.api.searchGames(query, state.searchPage);
-      if (data && data.results && data.results.length > 0) {
-        if (state.searchGamesCached) {
-          state.searchGamesCached.results.push(...data.results);
-          state.searchGamesCached.next = data.next;
-        }
-      }
-    }
-    
-    if (data && data.results && data.results.length > 0) {
-      const rendered = renderRawgSearchResults(data.results, true);
-      if (rendered === 0 && data.next) {
-        await loadMoreSearch();
-        return;
-      }
-      if (!data.next) {
-        if (searchLoadMoreContainer) searchLoadMoreContainer.classList.add('hidden');
-      }
-    } else {
-      if (searchLoadMoreContainer) searchLoadMoreContainer.classList.add('hidden');
-    }
-  } catch (err) {
-    console.error('Lỗi tải thêm kết quả tìm kiếm:', err);
-  } finally {
-    if (btnSearchLoadMore) {
-      btnSearchLoadMore.disabled = false;
-      btnSearchLoadMore.textContent = 'Xem thêm';
-    }
-  }
 }
